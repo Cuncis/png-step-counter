@@ -24,14 +24,14 @@ export default function Dashboard({ submission, steps }: { submission: FormSubmi
 
                 <Card className="mt-8">
                     <CardHeader className="flex-row items-baseline justify-between space-y-0">
-                        <h2 className="text-base font-semibold">Your application</h2>
+                        <h2 className="text-sm font-semibold tracking-wide text-[#252B69] uppercase dark:text-[#8fb3e0]">Your application</h2>
                         <span className="text-muted-foreground text-sm">
                             {completed} of {steps.length} steps
                         </span>
                     </CardHeader>
 
                     <CardContent>
-                        <Progress value={percent} />
+                        <Progress value={percent} className="[&>div]:bg-[#00B0C7]" />
                         <p className="text-muted-foreground mt-2 text-sm">{percent}% complete</p>
 
                         <ol className="mt-6 space-y-2">
@@ -41,7 +41,7 @@ export default function Dashboard({ submission, steps }: { submission: FormSubmi
                                     <li key={step.number} className="flex items-center gap-3 text-sm">
                                         <span
                                             className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-xs font-medium ${
-                                                done ? 'bg-primary text-primary-foreground' : 'bg-secondary text-muted-foreground'
+                                                done ? 'bg-[#215AA8] text-white' : 'bg-secondary text-muted-foreground'
                                             }`}
                                         >
                                             {done ? <Check className="h-3 w-3" /> : step.number}
@@ -54,11 +54,11 @@ export default function Dashboard({ submission, steps }: { submission: FormSubmi
 
                         <div className="mt-8 flex flex-col gap-3 sm:flex-row">
                             {submission.is_complete ? (
-                                <Button asChild className="w-full sm:w-auto">
+                                <Button asChild className="w-full bg-[#215AA8] hover:bg-[#252B69] sm:w-auto">
                                     <Link href={route('form.review')}>Review answers</Link>
                                 </Button>
                             ) : (
-                                <Button asChild className="w-full sm:w-auto">
+                                <Button asChild className="w-full bg-[#215AA8] hover:bg-[#252B69] sm:w-auto">
                                     <Link href={route('form.index')}>{completed === 0 ? 'Start the form' : 'Resume the form'}</Link>
                                 </Button>
                             )}

@@ -7,9 +7,84 @@
 
 @custom-variant dark (&:is(.dark *));
 
+@font-face {
+    font-family: 'GaryMCH';
+    src: url('/fonts/GaryMCH-Book.otf') format('opentype');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'GaryMCH';
+    src: url('/fonts/GaryMCH-Book-Italic.otf') format('opentype');
+    font-weight: 400;
+    font-style: italic;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'GaryMCH';
+    src: url('/fonts/GaryMCH-Medium.otf') format('opentype');
+    font-weight: 500;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'GaryMCH';
+    src: url('/fonts/GaryMCH-Medium-Italic.otf') format('opentype');
+    font-weight: 500;
+    font-style: italic;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'GaryMCH';
+    src: url('/fonts/GaryMCH-Semibold.otf') format('opentype');
+    font-weight: 600;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'GaryMCH';
+    src: url('/fonts/GaryMCH-Semibold-Italic.otf') format('opentype');
+    font-weight: 600;
+    font-style: italic;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'GaryMCH';
+    src: url('/fonts/GaryMCH-BookCd.otf') format('opentype');
+    font-weight: 400;
+    font-stretch: condensed;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'GaryMCH';
+    src: url('/fonts/GaryMCH-MediumCd.otf') format('opentype');
+    font-weight: 500;
+    font-stretch: condensed;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'GaryMCH';
+    src: url('/fonts/GaryMCH-SemiboldCd.otf') format('opentype');
+    font-weight: 600;
+    font-stretch: condensed;
+    font-style: normal;
+    font-display: swap;
+}
+
 @theme {
-    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
-        'Segoe UI Symbol', 'Noto Color Emoji';
+    --font-sans: 'GaryMCH', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol',
+        'Noto Color Emoji';
 
     --radius-lg: var(--radius);
     --radius-md: calc(var(--radius) - 2px);

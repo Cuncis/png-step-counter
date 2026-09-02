@@ -6,7 +6,8 @@
 
         <title inertia>{{ config('app.name', 'Laravel') }}</title>
 
-        @fonts
+        <link rel="preload" href="/fonts/GaryMCH-Book.otf" as="font" type="font/otf" crossorigin>
+        <link rel="preload" href="/fonts/GaryMCH-Semibold.otf" as="font" type="font/otf" crossorigin>
 
         @routes
         @viteReactRefresh
