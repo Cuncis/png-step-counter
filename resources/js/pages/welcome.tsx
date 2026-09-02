@@ -1,12 +1,11 @@
-import { Progress } from '@/components/ui/progress';
+import StepCounterPanel from '@/components/step-counter/panel';
 import { type SharedData } from '@/types';
 import { Head, Link, usePage } from '@inertiajs/react';
-import { Award, Flame, Footprints, Lock, MapPin, Target } from 'lucide-react';
-
-const ACHIEVEMENTS = ['First 1,000 steps', '5,000 steps in a day', '10,000 steps in a day', '7-day streak', '30 days in a month'];
+import { Footprints, Lock } from 'lucide-react';
 
 export default function Welcome() {
     const { auth } = usePage<SharedData>().props;
+    const ctaHref = auth.user ? route('dashboard') : route('register');
 
     return (
         <>
@@ -45,7 +44,7 @@ export default function Welcome() {
                 </header>
 
                 {/* Hero */}
-                <section className="relative overflow-hidden text-white" style={{ background: 'linear-gradient(135deg, #215AA8 0%, #252B69 100%)' }}>
+                <section className="relative overflow-hidden text-white" style={{ background: '#215AA8' }}>
                     <div
                         className="pointer-events-none absolute -top-24 -right-24 h-72 w-72 rounded-full opacity-20 blur-3xl"
                         style={{ background: '#00B0C7' }}
@@ -71,83 +70,12 @@ export default function Welcome() {
                     </div>
                 </section>
 
-                <main className="mx-auto w-full max-w-5xl px-6 py-16">
-                    {/* Today */}
-                    <section className="rounded-2xl border border-black/5 bg-white p-8 shadow-sm dark:border-white/10 dark:bg-white/5">
-                        <h2 className="text-sm font-semibold tracking-wide text-[#252B69] uppercase dark:text-[#8fb3e0]">Today</h2>
-
-                        <div className="mt-4 flex items-baseline gap-2">
-                            <span className="text-5xl font-bold" style={{ color: '#215AA8' }}>
-                                0
-                            </span>
-                            <span className="text-muted-foreground text-lg">steps</span>
-                            <span className="text-muted-foreground text-sm">of 10,000 steps</span>
-                        </div>
-
-                        <Progress value={0} className="mt-5 h-3 [&>div]:bg-[#00B0C7]" />
-
-                        <div className="text-muted-foreground mt-4 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm">
-                            <span className="inline-flex items-center gap-1.5">
-                                <MapPin className="h-4 w-4" />0 km estimated distance
-                            </span>
-                            <span className="hidden sm:inline">·</span>
-                            <span className="inline-flex items-center gap-1.5">
-                                <Flame className="h-4 w-4" />0 kcal estimated calories
-                            </span>
-                        </div>
-
-                        <p className="text-muted-foreground mt-4 text-sm">Start walking to begin tracking.</p>
-                    </section>
-
-                    {/* Your Progress */}
-                    <section className="mt-16">
-                        <h2 className="text-2xl font-semibold tracking-tight">Your Progress</h2>
-                        <p className="text-muted-foreground mt-1">Track your activity today, this week, and over time.</p>
-
-                        <div className="mt-6 grid gap-4 sm:grid-cols-2">
-                            <div className="rounded-2xl border border-black/5 bg-white p-6 dark:border-white/10 dark:bg-white/5">
-                                <div className="text-muted-foreground flex items-center gap-2 text-sm font-medium">
-                                    <Target className="h-4 w-4" style={{ color: '#215AA8' }} />
-                                    Daily Goal
-                                </div>
-                                <p className="mt-2 text-2xl font-semibold">10,000 steps</p>
-                            </div>
-                            <div className="rounded-2xl border border-black/5 bg-white p-6 dark:border-white/10 dark:bg-white/5">
-                                <div className="text-muted-foreground flex items-center gap-2 text-sm font-medium">
-                                    <Target className="h-4 w-4" style={{ color: '#00B0C7' }} />
-                                    Weekly Goal
-                                </div>
-                                <p className="mt-2 text-2xl font-semibold">70,000 steps</p>
-                            </div>
-                        </div>
-                    </section>
-
-                    {/* Achievements */}
-                    <section className="mt-16">
-                        <h2 className="text-2xl font-semibold tracking-tight">Achievements</h2>
-                        <p className="text-muted-foreground mt-1">Every step counts. Unlock achievements as you progress:</p>
-
-                        <ul className="mt-6 grid gap-3 sm:grid-cols-2">
-                            {ACHIEVEMENTS.map((achievement) => (
-                                <li
-                                    key={achievement}
-                                    className="flex items-center gap-3 rounded-xl border border-black/5 bg-white px-4 py-3 dark:border-white/10 dark:bg-white/5"
-                                >
-                                    <span
-                                        className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full"
-                                        style={{ background: 'color-mix(in srgb, #EF5323 15%, transparent)' }}
-                                    >
-                                        <Award className="h-4 w-4" style={{ color: '#EF5323' }} />
-                                    </span>
-                                    <span className="text-sm font-medium">{achievement}</span>
-                                </li>
-                            ))}
-                        </ul>
-                    </section>
+                <main className="mx-auto w-full max-w-6xl px-6 py-16">
+                    <StepCounterPanel ctaHref={ctaHref} />
                 </main>
 
                 {/* Closing */}
-                <section className="text-white" style={{ background: 'linear-gradient(135deg, #252B69 0%, #215AA8 100%)' }}>
+                <section className="text-white" style={{ background: '#252B69' }}>
                     <div className="mx-auto flex w-full max-w-5xl flex-col items-center px-6 py-16 text-center">
                         <h2 className="text-3xl font-bold tracking-tight">Walk. Track. Achieve.</h2>
                         <p className="mt-3 max-w-xl text-white/80">

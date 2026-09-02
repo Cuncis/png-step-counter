@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\FormController;
+use App\Http\Controllers\StepEntryController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -16,6 +17,9 @@ Route::middleware(['auth'])->group(function () {
     Route::post('form/{step}', [FormController::class, 'update'])->whereNumber('step')->name('form.update');
     Route::post('form/reset', [FormController::class, 'reset'])->name('form.reset');
     Route::get('review', [FormController::class, 'review'])->name('form.review');
+
+    Route::get('steps', [StepEntryController::class, 'index'])->name('steps.index');
+    Route::post('steps', [StepEntryController::class, 'store'])->name('steps.store');
 });
 
 require __DIR__.'/settings.php';

@@ -1,0 +1,95 @@
+<?php
+
+namespace Tests\Feature;
+
+use App\Models\StepEntry;
+use App\Models\User;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
+use Tests\TestCase;
+
+class StepEntryTest extends TestCase
+{
+    use RefreshDatabase;
+
+    public function test_guests_are_redirected_to_the_login_page(): void
+    {
+        $this->get('/steps')->assertRedirect('/login');
+        $this->post('/steps', ['steps' => 1000])->assertRedirect('/login');
+    }
+
+    public function test_authenticated_users_can_visit_the_steps_page(): void
+    {
+        $this->actingAs(User::factory()->create());
+
+        $this->get('/steps')->assertOk();
+    }
+
+    public function test_logging_steps_requires_steps_and_evidence(): void
+    {
+        $this->actingAs(User::factory()->create());
+
+        $this->post('/steps', [])->assertSessionHasErrors(['steps', 'evidence']);
+    }
+
+    public function test_users_can_log_todays_steps_with_evidence(): void
+    {
+        Storage::fake('public');
+        $user = User::factory()->create();
+
+        $response = $this->actingAs($user)->post('/steps', [
+            'steps' => 6500,
+            'evidence' => UploadedFile::fake()->image('evidence.jpg'),
+        ]);
+
+        $response->assertRedirect(route('steps.index'));
+
+        $entry = StepEntry::where('user_id', $user->id)->where('date', today())->first();
+        $this->assertNotNull($entry);
+        $this->assertSame(6500, $entry->steps);
+        Storage::disk('public')->assertExists($entry->evidence_path);
+    }
+
+    public function test_logging_steps_again_the_same_day_replaces_the_entry_and_evidence(): void
+    {
+        Storage::fake('public');
+        $user = User::factory()->create();
+
+        $this->actingAs($user)->post('/steps', [
+            'steps' => 3000,
+            'evidence' => UploadedFile::fake()->image('first.jpg'),
+        ]);
+        $firstPath = StepEntry::where('user_id', $user->id)->first()->evidence_path;
+
+        $this->actingAs($user)->post('/steps', [
+            'steps' => 8000,
+            'evidence' => UploadedFile::fake()->image('second.jpg'),
+        ]);
+
+        $entries = StepEntry::where('user_id', $user->id)->get();
+        $this->assertCount(1, $entries);
+        $this->assertSame(8000, $entries->first()->steps);
+        Storage::disk('public')->assertMissing($firstPath);
+        Storage::disk('public')->assertExists($entries->first()->evidence_path);
+    }
+
+    public function test_steps_page_reflects_todays_entry_and_week_total(): void
+    {
+        Storage::fake('public');
+        $user = User::factory()->create();
+
+        StepEntry::factory()->for($user)->create(['date' => today(), 'steps' => 4200]);
+        StepEntry::factory()->for($user)->create(['date' => today()->subDay(), 'steps' => 3000]);
+
+        $response = $this->actingAs($user)->get('/steps');
+
+        $response->assertOk();
+        $response->assertInertia(fn ($page) => $page
+            ->where('today.steps', 4200)
+            ->where('week.total', 7200)
+            ->where('month.total', 7200)
+            ->where('year.total', 7200)
+        );
+    }
+}
