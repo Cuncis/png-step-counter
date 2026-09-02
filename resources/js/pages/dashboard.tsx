@@ -1,3 +1,4 @@
+import FormStepReviewCard from '@/components/form-step-review-card';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
@@ -22,49 +23,51 @@ export default function Dashboard({ submission, steps }: { submission: FormSubmi
                 <h1 className="text-2xl font-semibold tracking-tight">Welcome back, {auth.user.name}</h1>
                 <p className="text-muted-foreground mt-1 text-sm">{auth.user.email}</p>
 
-                <Card className="mt-8">
-                    <CardHeader className="flex-row items-baseline justify-between space-y-0">
-                        <h2 className="text-sm font-semibold tracking-wide text-[#252B69] uppercase dark:text-[#8fb3e0]">Your application</h2>
-                        <span className="text-muted-foreground text-sm">
-                            {completed} of {steps.length} steps
-                        </span>
-                    </CardHeader>
+                {submission.is_complete ? (
+                    <div className="mt-8 space-y-4">
+                        {steps.map((step) => (
+                            <FormStepReviewCard key={step.number} step={step} data={submission.steps[String(step.number)]} />
+                        ))}
+                    </div>
+                ) : (
+                    <Card className="mt-8">
+                        <CardHeader className="flex-row items-baseline justify-between space-y-0">
+                            <h2 className="text-sm font-semibold tracking-wide text-[#252B69] uppercase dark:text-[#8fb3e0]">Your journey</h2>
+                            <span className="text-muted-foreground text-sm">
+                                {completed} of {steps.length} steps
+                            </span>
+                        </CardHeader>
 
-                    <CardContent>
-                        <Progress value={percent} className="[&>div]:bg-[#00B0C7]" />
-                        <p className="text-muted-foreground mt-2 text-sm">{percent}% complete</p>
+                        <CardContent>
+                            <Progress value={percent} className="[&>div]:bg-[#00B0C7]" />
+                            <p className="text-muted-foreground mt-2 text-sm">{percent}% complete</p>
 
-                        <ol className="mt-6 space-y-2">
-                            {steps.map((step) => {
-                                const done = Boolean(submission.steps[String(step.number)]);
-                                return (
-                                    <li key={step.number} className="flex items-center gap-3 text-sm">
-                                        <span
-                                            className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-xs font-medium ${
-                                                done ? 'bg-[#215AA8] text-white' : 'bg-secondary text-muted-foreground'
-                                            }`}
-                                        >
-                                            {done ? <Check className="h-3 w-3" /> : step.number}
-                                        </span>
-                                        <span className={done ? '' : 'text-muted-foreground'}>{step.name}</span>
-                                    </li>
-                                );
-                            })}
-                        </ol>
+                            <ol className="mt-6 space-y-2">
+                                {steps.map((step) => {
+                                    const done = Boolean(submission.steps[String(step.number)]);
+                                    return (
+                                        <li key={step.number} className="flex items-center gap-3 text-sm">
+                                            <span
+                                                className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-xs font-medium ${
+                                                    done ? 'bg-[#215AA8] text-white' : 'bg-secondary text-muted-foreground'
+                                                }`}
+                                            >
+                                                {done ? <Check className="h-3 w-3" /> : step.number}
+                                            </span>
+                                            <span className={done ? '' : 'text-muted-foreground'}>{step.name}</span>
+                                        </li>
+                                    );
+                                })}
+                            </ol>
 
-                        <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-                            {submission.is_complete ? (
+                            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
                                 <Button asChild className="w-full bg-[#215AA8] hover:bg-[#252B69] sm:w-auto">
-                                    <Link href={route('form.review')}>Review answers</Link>
+                                    <Link href={route('form.index')}>{completed === 0 ? 'Start your journey' : 'Continue your journey'}</Link>
                                 </Button>
-                            ) : (
-                                <Button asChild className="w-full bg-[#215AA8] hover:bg-[#252B69] sm:w-auto">
-                                    <Link href={route('form.index')}>{completed === 0 ? 'Start the form' : 'Resume the form'}</Link>
-                                </Button>
-                            )}
-                        </div>
-                    </CardContent>
-                </Card>
+                            </div>
+                        </CardContent>
+                    </Card>
+                )}
             </div>
         </AppLayout>
     );

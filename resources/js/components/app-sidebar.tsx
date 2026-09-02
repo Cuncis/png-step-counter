@@ -3,7 +3,7 @@ import { NavUser } from '@/components/nav-user';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/react';
-import { ClipboardList, Footprints, LayoutGrid } from 'lucide-react';
+import { Footprints, LayoutGrid } from 'lucide-react';
 import AppLogo from './app-logo';
 
 const mainNavItems: NavItem[] = [
@@ -16,11 +16,6 @@ const mainNavItems: NavItem[] = [
         title: 'Steps',
         url: '/steps',
         icon: Footprints,
-    },
-    {
-        title: 'Onboarding form',
-        url: '/form',
-        icon: ClipboardList,
     },
 ];
 

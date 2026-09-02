@@ -33,7 +33,12 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
-        return redirect()->intended(route('dashboard', absolute: false));
+        $submission = $request->user()->formSubmission;
+        $default = $submission?->is_complete
+            ? route('dashboard', absolute: false)
+            : route('form.index', absolute: false);
+
+        return redirect()->intended($default);
     }
 
     /**

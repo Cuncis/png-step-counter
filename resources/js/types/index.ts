@@ -39,18 +39,27 @@ export interface User {
     [key: string]: unknown; // This allows for additional properties...
 }
 
+export interface FormFieldOption {
+    value: string;
+    label: string;
+}
+
 export interface FormField {
     name: string;
     label: string;
-    type: 'text' | 'email' | 'tel' | 'date' | 'textarea';
+    type: 'text' | 'email' | 'tel' | 'date' | 'textarea' | 'select' | 'number';
     optional?: boolean;
     placeholder?: string;
+    options?: FormFieldOption[];
+    allowOther?: boolean;
+    suffix?: string;
 }
 
 export interface FormStepDefinition {
     number: number;
     name: string;
     description: string;
+    icon: string;
     fields: FormField[];
 }
 

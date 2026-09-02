@@ -41,8 +41,8 @@ class FormFlowTest extends TestCase
         $user = User::factory()->create();
 
         $this->actingAs($user)
-            ->post('/form/1', ['first_name' => '', 'last_name' => '', 'date_of_birth' => ''])
-            ->assertSessionHasErrors(['first_name', 'last_name', 'date_of_birth']);
+            ->post('/form/1', ['date_of_birth' => '', 'country' => ''])
+            ->assertSessionHasErrors(['date_of_birth', 'country']);
 
         $this->assertSame(1, $user->fresh()->formSubmission?->current_step ?? 1);
     }
@@ -52,9 +52,9 @@ class FormFlowTest extends TestCase
         $user = User::factory()->create();
 
         $response = $this->actingAs($user)->post('/form/1', [
-            'first_name' => 'Budi',
-            'last_name' => 'Santoso',
             'date_of_birth' => '1990-01-01',
+            'gender' => 'prefer_not_to_say',
+            'country' => 'ID',
         ]);
 
         $response->assertRedirect(route('form.show', ['step' => 2]));
@@ -62,17 +62,27 @@ class FormFlowTest extends TestCase
         $submission = $user->fresh()->formSubmission;
         $this->assertSame(2, $submission->current_step);
         $this->assertFalse($submission->is_complete);
-        $this->assertSame('Budi', $submission->steps[1]['first_name']);
+        $this->assertSame('ID', $submission->steps[1]['country']);
+    }
+
+    public function test_occupation_other_is_required_when_occupation_is_other(): void
+    {
+        $user = User::factory()->create();
+        FormSubmission::factory()->create(['user_id' => $user->id, 'current_step' => 3]);
+
+        $this->actingAs($user)
+            ->post('/form/3', ['occupation' => 'other', 'occupation_other' => '', 'activity_level' => 'light'])
+            ->assertSessionHasErrors(['occupation_other']);
     }
 
     public function test_completing_the_final_step_marks_the_submission_complete_and_redirects_to_review(): void
     {
         $user = User::factory()->create();
-        FormSubmission::factory()->create(['user_id' => $user->id, 'current_step' => 4]);
+        FormSubmission::factory()->create(['user_id' => $user->id, 'current_step' => 3]);
 
-        $response = $this->actingAs($user)->post('/form/4', [
-            'occupation' => 'Product designer',
-            'bio' => '',
+        $response = $this->actingAs($user)->post('/form/3', [
+            'occupation' => 'office',
+            'activity_level' => 'moderate',
         ]);
 
         $response->assertRedirect(route('form.review'));
@@ -86,7 +96,7 @@ class FormFlowTest extends TestCase
         $user = User::factory()->create();
         FormSubmission::factory()->create([
             'user_id' => $user->id,
-            'steps' => [1 => ['first_name' => 'Budi', 'last_name' => 'Santoso', 'date_of_birth' => '1990-01-01']],
+            'steps' => [1 => ['date_of_birth' => '1990-01-01', 'country' => 'ID']],
             'current_step' => 2,
         ]);
 
@@ -98,7 +108,7 @@ class FormFlowTest extends TestCase
         $user = User::factory()->create();
         FormSubmission::factory()->create([
             'user_id' => $user->id,
-            'steps' => [1 => ['first_name' => 'Budi']],
+            'steps' => [1 => ['country' => 'ID']],
             'current_step' => 2,
             'is_complete' => false,
         ]);

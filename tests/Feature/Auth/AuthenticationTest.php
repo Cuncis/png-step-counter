@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Auth;
 
+use App\Models\FormSubmission;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -17,7 +18,7 @@ class AuthenticationTest extends TestCase
         $response->assertStatus(200);
     }
 
-    public function test_users_can_authenticate_using_the_login_screen()
+    public function test_users_with_no_journey_progress_are_sent_into_the_journey_on_login()
     {
         $user = User::factory()->create();
 
@@ -27,6 +28,32 @@ class AuthenticationTest extends TestCase
         ]);
 
         $this->assertAuthenticated();
+        $response->assertRedirect(route('form.index', absolute: false));
+    }
+
+    public function test_users_with_an_incomplete_journey_resume_it_on_login()
+    {
+        $user = User::factory()->create();
+        FormSubmission::factory()->create(['user_id' => $user->id, 'is_complete' => false]);
+
+        $response = $this->post('/login', [
+            'email' => $user->email,
+            'password' => 'password',
+        ]);
+
+        $response->assertRedirect(route('form.index', absolute: false));
+    }
+
+    public function test_users_who_completed_the_journey_land_on_the_dashboard_on_login()
+    {
+        $user = User::factory()->create();
+        FormSubmission::factory()->create(['user_id' => $user->id, 'is_complete' => true]);
+
+        $response = $this->post('/login', [
+            'email' => $user->email,
+            'password' => 'password',
+        ]);
+
         $response->assertRedirect(route('dashboard', absolute: false));
     }
 
