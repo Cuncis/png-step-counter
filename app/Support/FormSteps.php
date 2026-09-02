@@ -2,6 +2,9 @@
 
 namespace App\Support;
 
+use Exception;
+use Illuminate\Support\Carbon;
+
 /**
  * Single source of truth for the post-registration health journey: its
  * steps, fields, and the validation rules each step's fields must satisfy.
@@ -111,6 +114,48 @@ class FormSteps
             fn (int $number) => self::find($number),
             array_keys(self::definitions()),
         );
+    }
+
+    /**
+     * Formats a single saved answer for display, mirroring the frontend's
+     * `formatFormFieldValue` so the admin panel reads the same as the app.
+     *
+     * @param  array<string, mixed>  $field
+     * @param  array<string, string>  $data
+     */
+    public static function formatValue(array $field, array $data): string
+    {
+        $value = $data[$field['name']] ?? null;
+
+        if ($value === null || trim($value) === '') {
+            return 'Not answered';
+        }
+
+        if ($field['type'] === 'date') {
+            try {
+                return Carbon::parse($value)->format('F j, Y');
+            } catch (Exception) {
+                return $value;
+            }
+        }
+
+        if ($field['type'] === 'select') {
+            if (($field['allowOther'] ?? false) && $value === 'other') {
+                $other = $data["{$field['name']}_other"] ?? null;
+
+                return $other && trim($other) !== '' ? $other : 'Other';
+            }
+
+            $option = collect($field['options'] ?? [])->firstWhere('value', $value);
+
+            return $option['label'] ?? $value;
+        }
+
+        if ($field['type'] === 'number') {
+            return isset($field['suffix']) ? "{$value} {$field['suffix']}" : $value;
+        }
+
+        return $value;
     }
 
     /**
