@@ -35,10 +35,10 @@ export default function StepCounterPanel({ ctaHref }: { ctaHref: string }) {
                                 <p className="text-muted-foreground pt-0.5 text-[13px]">Track your steps. Achieve your goals. Stay consistent.</p>
                             </div>
                             <div className="flex items-center gap-2">
-                                <div role="tablist" aria-label="Summary period" className="bg-secondary relative flex rounded-lg p-1">
+                                <div role="tablist" aria-label="Summary period" className="bg-secondary relative grid grid-cols-4 rounded-lg p-1">
                                     <div
                                         aria-hidden="true"
-                                        className="absolute top-1 bottom-1 rounded-md bg-[#215AA8] shadow-sm transition-transform duration-300 ease-out motion-reduce:transition-none"
+                                        className="absolute top-1 bottom-1 left-1 rounded-md bg-[#215AA8] shadow-sm transition-transform duration-300 ease-out motion-reduce:transition-none"
                                         style={{
                                             width: `calc((100% - 8px) / ${PERIODS.length})`,
                                             transform: `translateX(${activeIndex * 100}%)`,
@@ -51,7 +51,7 @@ export default function StepCounterPanel({ ctaHref }: { ctaHref: string }) {
                                             role="tab"
                                             aria-selected={period === label}
                                             onClick={() => setPeriod(label)}
-                                            className={`relative z-10 flex-1 rounded-md px-2.5 py-1.5 text-[13px] font-medium whitespace-nowrap transition-colors duration-300 ${
+                                            className={`relative z-10 rounded-md px-2.5 py-1.5 text-center text-[13px] font-medium whitespace-nowrap transition-colors duration-300 ${
                                                 period === label ? 'text-white' : 'text-muted-foreground hover:text-foreground'
                                             }`}
                                         >

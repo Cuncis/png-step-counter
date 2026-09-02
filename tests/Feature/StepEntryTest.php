@@ -88,8 +88,30 @@ class StepEntryTest extends TestCase
         $response->assertInertia(fn ($page) => $page
             ->where('today.steps', 4200)
             ->where('week.total', 7200)
+            ->where('week.offset', 0)
             ->where('month.total', 7200)
             ->where('year.total', 7200)
         );
+    }
+
+    public function test_week_param_browses_a_previous_week(): void
+    {
+        $user = User::factory()->create();
+
+        StepEntry::factory()->for($user)->create(['date' => today(), 'steps' => 4200]);
+        StepEntry::factory()->for($user)->create(['date' => today()->subWeek(), 'steps' => 5000]);
+
+        $thisWeek = $this->actingAs($user)->get('/steps');
+        $thisWeek->assertInertia(fn ($page) => $page->where('week.total', 4200));
+
+        $lastWeek = $this->actingAs($user)->get('/steps?week=-1');
+        $lastWeek->assertInertia(fn ($page) => $page
+            ->where('week.total', 5000)
+            ->where('week.offset', -1)
+        );
+
+        // Future weeks are clamped back to the current week.
+        $futureWeek = $this->actingAs($user)->get('/steps?week=1');
+        $futureWeek->assertInertia(fn ($page) => $page->where('week.offset', 0));
     }
 }

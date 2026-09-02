@@ -12,7 +12,7 @@ import { Label } from '@/components/ui/label';
 import AppLayout from '@/layouts/app-layout';
 import { estimateCalories, estimateDistanceKm } from '@/lib/step-estimates';
 import { type BreadcrumbItem } from '@/types';
-import { Head, useForm } from '@inertiajs/react';
+import { Head, router, useForm } from '@inertiajs/react';
 import { Flame, LoaderCircle, MapPin, Paperclip, Upload } from 'lucide-react';
 import { FormEventHandler, useMemo, useRef, useState } from 'react';
 
@@ -26,7 +26,7 @@ const breadcrumbs: BreadcrumbItem[] = [{ title: 'Steps', href: '/steps' }];
 
 interface StepsPageProps {
     today: { steps: number; evidenceUrl: string | null };
-    week: { entries: Record<string, number>; total: number; daysRecorded: number };
+    week: { entries: Record<string, number>; total: number; daysRecorded: number; startDate: string; offset: number };
     month: { total: number; daysRecorded: number };
     year: { total: number; daysRecorded: number };
     streakDays: number;
@@ -50,6 +50,11 @@ export default function StepsIndex({ today, week, month, year, streakDays, unloc
     const evidenceInputRef = useRef<HTMLInputElement>(null);
     const [period, setPeriod] = useState<Period>('Day');
     const activeIndex = PERIODS.indexOf(period);
+
+    function navigateWeek(direction: 'prev' | 'next') {
+        const nextOffset = direction === 'prev' ? week.offset - 1 : week.offset + 1;
+        router.get(route('steps.index'), { week: nextOffset }, { only: ['week'], preserveState: true, preserveScroll: true });
+    }
 
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
@@ -110,13 +115,13 @@ export default function StepsIndex({ today, week, month, year, streakDays, unloc
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Steps" />
 
-            <div className="mx-auto w-full max-w-5xl px-4 py-8">
+            <div className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
                 <h1 className="text-2xl font-semibold tracking-tight">Log your steps</h1>
                 <p className="text-muted-foreground mt-1 text-sm">
                     Enter today&apos;s step count and upload a photo of your phone or tracker as evidence.
                 </p>
 
-                <div className="mt-6 grid gap-4 sm:gap-5 lg:grid-cols-[minmax(0,1fr)_320px]">
+                <div className="mt-6 grid gap-4 sm:gap-5 lg:grid-cols-[minmax(0,1fr)_440px]">
                     <div className="flex flex-col gap-4 sm:gap-5">
                         <Card className="overflow-hidden shadow-sm">
                             <div className="relative overflow-hidden px-5 pt-5 pb-2 sm:px-7 sm:pt-6">
@@ -126,10 +131,14 @@ export default function StepsIndex({ today, week, month, year, streakDays, unloc
                                         <p className="text-muted-foreground pt-0.5 text-[13px]">{active.subtitle}</p>
                                     </div>
                                     <div className="flex items-center gap-2">
-                                        <div role="tablist" aria-label="Summary period" className="bg-secondary relative flex rounded-lg p-1">
+                                        <div
+                                            role="tablist"
+                                            aria-label="Summary period"
+                                            className="bg-secondary relative grid grid-cols-4 rounded-lg p-1"
+                                        >
                                             <div
                                                 aria-hidden="true"
-                                                className="absolute top-1 bottom-1 rounded-md bg-[#215AA8] shadow-sm transition-transform duration-300 ease-out motion-reduce:transition-none"
+                                                className="absolute top-1 bottom-1 left-1 rounded-md bg-[#215AA8] shadow-sm transition-transform duration-300 ease-out motion-reduce:transition-none"
                                                 style={{
                                                     width: `calc((100% - 8px) / ${PERIODS.length})`,
                                                     transform: `translateX(${activeIndex * 100}%)`,
@@ -142,7 +151,7 @@ export default function StepsIndex({ today, week, month, year, streakDays, unloc
                                                     role="tab"
                                                     aria-selected={period === label}
                                                     onClick={() => setPeriod(label)}
-                                                    className={`relative z-10 flex-1 rounded-md px-2.5 py-1.5 text-[13px] font-medium whitespace-nowrap transition-colors duration-300 ${
+                                                    className={`relative z-10 rounded-md px-2.5 py-1.5 text-center text-[13px] font-medium whitespace-nowrap transition-colors duration-300 ${
                                                         period === label ? 'text-white' : 'text-muted-foreground hover:text-foreground'
                                                     }`}
                                                 >
@@ -295,7 +304,13 @@ export default function StepsIndex({ today, week, month, year, streakDays, unloc
                     </div>
 
                     <div className="flex flex-col gap-4 sm:gap-5">
-                        <WeekPanel entries={week.entries} />
+                        <WeekPanel
+                            entries={week.entries}
+                            referenceDate={week.startDate}
+                            canGoPrevious
+                            canGoNext={week.offset < 0}
+                            onNavigate={navigateWeek}
+                        />
 
                         <Card className="shadow-sm">
                             <CardHeader className="flex-row items-start gap-3 space-y-0">

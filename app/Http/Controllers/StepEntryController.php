@@ -21,8 +21,11 @@ class StepEntryController extends Controller
         $today = today();
         $todayEntry = $entries->first(fn (StepEntry $entry) => $entry->date->isSameDay($today));
 
-        $weekStart = $today->copy()->startOfWeek();
-        $weekEnd = $today->copy()->endOfWeek();
+        // Negative offsets browse past weeks; future weeks are never allowed.
+        $weekOffset = min(0, $request->integer('week', 0));
+        $weekReference = $today->copy()->addWeeks($weekOffset);
+        $weekStart = $weekReference->copy()->startOfWeek();
+        $weekEnd = $weekReference->copy()->endOfWeek();
         $weekEntries = StepStats::stepsByDate($entries, $weekStart, $weekEnd);
 
         $monthEntries = $entries->filter(fn (StepEntry $entry) => $entry->date->isSameMonth($today));
@@ -38,6 +41,8 @@ class StepEntryController extends Controller
                 'entries' => (object) $weekEntries->all(),
                 'total' => $weekEntries->sum(),
                 'daysRecorded' => $weekEntries->count(),
+                'startDate' => $weekStart->toDateString(),
+                'offset' => $weekOffset,
             ],
             'month' => [
                 'total' => $monthEntries->sum('steps'),
