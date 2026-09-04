@@ -34,9 +34,6 @@ class UsersTable
                     ->label('Days logged')
                     ->counts('stepEntries')
                     ->sortable(),
-                IconColumn::make('is_admin')
-                    ->label('Admin')
-                    ->boolean(),
                 TextColumn::make('created_at')
                     ->label('Joined')
                     ->dateTime()
@@ -44,8 +41,6 @@ class UsersTable
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                TernaryFilter::make('is_admin')
-                    ->label('Admin access'),
                 TernaryFilter::make('journey_complete')
                     ->label('Journey complete')
                     ->queries(
