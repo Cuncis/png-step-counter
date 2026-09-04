@@ -26,9 +26,6 @@ class UserInfolist
                         TextEntry::make('created_at')
                             ->label('Joined')
                             ->dateTime(),
-                        IconEntry::make('is_admin')
-                            ->label('Admin access')
-                            ->boolean(),
                     ]),
                 Section::make('Step counter activity')
                     ->columns(3)
