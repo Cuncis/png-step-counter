@@ -8,11 +8,15 @@ use Illuminate\Support\Carbon;
 
 class DailyStepsChart extends ChartWidget
 {
-    protected ?string $heading = 'Total steps logged, last 14 days';
+    protected ?string $heading = 'Total steps logged, last 30 days';
+
+    protected int|string|array $columnSpan = 'full';
+
+    protected ?string $maxHeight = '260px';
 
     protected function getData(): array
     {
-        $start = today()->subDays(13);
+        $start = today()->subDays(29);
 
         $totalsByDate = StepEntry::query()
             ->whereDate('date', '>=', $start)
@@ -20,7 +24,7 @@ class DailyStepsChart extends ChartWidget
             ->groupBy('day')
             ->pluck('total', 'day');
 
-        $dates = collect(range(0, 13))->map(fn (int $offset) => $start->copy()->addDays($offset));
+        $dates = collect(range(0, 29))->map(fn (int $offset) => $start->copy()->addDays($offset));
 
         return [
             'datasets' => [

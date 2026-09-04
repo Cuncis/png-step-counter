@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Users\Schemas;
 
+use App\Models\User;
 use App\Support\FormSteps;
 use App\Support\StepStats;
 use Filament\Infolists\Components\IconEntry;
@@ -14,6 +15,7 @@ class UserInfolist
     public static function configure(Schema $schema): Schema
     {
         return $schema
+            ->dense()
             ->components([
                 Section::make('Account')
                     ->columns(2)
@@ -47,13 +49,27 @@ class UserInfolist
                         IconEntry::make('journey_complete')
                             ->label('Completed')
                             ->boolean()
-                            ->state(fn ($record) => (bool) $record->formSubmission?->is_complete),
+                            ->state(fn (User $record) => (bool) $record->formSubmission?->is_complete),
                         TextEntry::make('journey_step')
                             ->label('Current step')
-                            ->state(fn ($record) => $record->formSubmission
+                            ->state(fn (User $record) => $record->formSubmission
                                 ? $record->formSubmission->current_step.' of '.FormSteps::totalSteps()
                                 : 'Not started'),
                     ]),
+                ...collect(FormSteps::all())->map(
+                    fn (array $step) => Section::make($step['name'])
+                        ->columns(2)
+                        ->components(
+                            collect($step['fields'])
+                                ->map(fn (array $field) => TextEntry::make("journey.{$step['number']}.{$field['name']}")
+                                    ->label($field['label'])
+                                    ->state(fn (User $record) => FormSteps::formatValue(
+                                        $field,
+                                        $record->formSubmission?->steps[$step['number']] ?? [],
+                                    )))
+                                ->all(),
+                        ),
+                )->all(),
             ]);
     }
 }
