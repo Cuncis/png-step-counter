@@ -13,6 +13,12 @@ function semicirclePath(cx: number, cy: number, r: number) {
     return `M ${start.x} ${start.y} A ${r} ${r} 0 0 1 ${end.x} ${end.y}`;
 }
 
+function valueTextSizeClass(formattedValue: string): string {
+    if (formattedValue.length >= 7) return 'text-2xl sm:text-3xl';
+    if (formattedValue.length >= 6) return 'text-3xl sm:text-4xl';
+    return 'text-4xl sm:text-5xl';
+}
+
 export default function StepGauge({ value, goal, label = 'Today' }: { value: number; goal: number; label?: string }) {
     const percent = goal > 0 ? Math.min(100, Math.round((value / goal) * 100)) : 0;
     const [animatedPercent, setAnimatedPercent] = useState(0);
@@ -65,9 +71,9 @@ export default function StepGauge({ value, goal, label = 'Today' }: { value: num
                     className="transition-[stroke-dashoffset] duration-1000 ease-out motion-reduce:transition-none"
                 />
             </svg>
-            <div className="absolute inset-x-0 bottom-4 flex flex-col items-center text-center">
+            <div className="absolute inset-x-0 bottom-4 flex flex-col items-center px-2 text-center">
                 <span className="text-muted-foreground text-xs font-semibold tracking-wide uppercase">{label}</span>
-                <strong className="text-4xl font-bold tabular-nums sm:text-5xl">{value.toLocaleString()}</strong>
+                <strong className={`font-bold tabular-nums ${valueTextSizeClass(value.toLocaleString())}`}>{value.toLocaleString()}</strong>
                 <span className="text-muted-foreground text-xs">of {goal.toLocaleString()} steps</span>
             </div>
         </div>
