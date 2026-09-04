@@ -123,7 +123,7 @@ export default function StepCounterPanel({ ctaHref }: { ctaHref: string }) {
                 </div>
 
                 <div className="animate-fade-slide-up" style={fadeIn(100)}>
-                    <AchievementsPanel />
+                    <AchievementsPanel layout="horizontal" />
                 </div>
             </div>
 
