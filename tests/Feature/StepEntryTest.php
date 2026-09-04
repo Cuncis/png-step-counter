@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\FormSubmission;
 use App\Models\StepEntry;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -13,6 +14,14 @@ class StepEntryTest extends TestCase
 {
     use RefreshDatabase;
 
+    private function userWithCompletedJourney(): User
+    {
+        $user = User::factory()->create();
+        FormSubmission::factory()->create(['user_id' => $user->id, 'is_complete' => true]);
+
+        return $user;
+    }
+
     public function test_guests_are_redirected_to_the_login_page(): void
     {
         $this->get('/steps')->assertRedirect('/login');
@@ -21,14 +30,32 @@ class StepEntryTest extends TestCase
 
     public function test_authenticated_users_can_visit_the_steps_page(): void
     {
-        $this->actingAs(User::factory()->create());
+        $this->actingAs($this->userWithCompletedJourney());
 
         $this->get('/steps')->assertOk();
     }
 
-    public function test_logging_steps_requires_steps_and_evidence(): void
+    public function test_users_with_no_journey_progress_are_redirected_from_steps_to_the_journey(): void
     {
         $this->actingAs(User::factory()->create());
+
+        $this->get('/steps')->assertRedirect(route('form.index'));
+        $this->post('/steps', ['steps' => 1000])->assertRedirect(route('form.index'));
+    }
+
+    public function test_users_with_an_incomplete_journey_are_redirected_from_steps_to_the_journey(): void
+    {
+        $user = User::factory()->create();
+        FormSubmission::factory()->create(['user_id' => $user->id, 'is_complete' => false]);
+
+        $this->actingAs($user);
+
+        $this->get('/steps')->assertRedirect(route('form.index'));
+    }
+
+    public function test_logging_steps_requires_steps_and_evidence(): void
+    {
+        $this->actingAs($this->userWithCompletedJourney());
 
         $this->post('/steps', [])->assertSessionHasErrors(['steps', 'evidence']);
     }
@@ -36,7 +63,7 @@ class StepEntryTest extends TestCase
     public function test_users_can_log_todays_steps_with_evidence(): void
     {
         Storage::fake('public');
-        $user = User::factory()->create();
+        $user = $this->userWithCompletedJourney();
 
         $response = $this->actingAs($user)->post('/steps', [
             'steps' => 6500,
@@ -54,7 +81,7 @@ class StepEntryTest extends TestCase
     public function test_logging_steps_again_the_same_day_replaces_the_entry_and_evidence(): void
     {
         Storage::fake('public');
-        $user = User::factory()->create();
+        $user = $this->userWithCompletedJourney();
 
         $this->actingAs($user)->post('/steps', [
             'steps' => 3000,
@@ -77,7 +104,7 @@ class StepEntryTest extends TestCase
     public function test_steps_page_reflects_todays_entry_and_week_total(): void
     {
         Storage::fake('public');
-        $user = User::factory()->create();
+        $user = $this->userWithCompletedJourney();
 
         StepEntry::factory()->for($user)->create(['date' => today(), 'steps' => 4200]);
         StepEntry::factory()->for($user)->create(['date' => today()->subDay(), 'steps' => 3000]);
@@ -96,7 +123,7 @@ class StepEntryTest extends TestCase
 
     public function test_week_param_browses_a_previous_week(): void
     {
-        $user = User::factory()->create();
+        $user = $this->userWithCompletedJourney();
 
         StepEntry::factory()->for($user)->create(['date' => today(), 'steps' => 4200]);
         StepEntry::factory()->for($user)->create(['date' => today()->subWeek(), 'steps' => 5000]);

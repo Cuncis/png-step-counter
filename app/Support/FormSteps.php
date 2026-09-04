@@ -9,8 +9,7 @@ use Illuminate\Support\Carbon;
  * Single source of truth for the post-registration health journey: its
  * steps, fields, and the validation rules each step's fields must satisfy.
  * The step/field shape is shared with the frontend as an Inertia prop, so a
- * change here updates the wizard, the dashboard checklist, and the review
- * page together.
+ * change here updates the wizard and the review page together.
  */
 class FormSteps
 {
@@ -168,7 +167,7 @@ class FormSteps
     {
         return match ($step) {
             1 => [
-                'date_of_birth' => ['required', 'date', 'before:today', 'after:1900-01-01'],
+                'date_of_birth' => ['required', 'date', 'before_or_equal:2010-12-31', 'after:1900-01-01'],
                 'gender' => ['nullable', 'in:'.implode(',', array_column(self::GENDERS, 'value'))],
                 'country' => ['required', 'in:'.implode(',', array_column(Countries::options(), 'value'))],
             ],

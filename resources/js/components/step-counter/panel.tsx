@@ -6,7 +6,7 @@ import StreakCard from '@/components/step-counter/streak-card';
 import WeekPanel from '@/components/step-counter/week-panel';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Link } from '@inertiajs/react';
-import { Activity, Flame, MapPin, Play, Target, TrendingUp } from 'lucide-react';
+import { Flame, MapPin, Play, Target } from 'lucide-react';
 import { useState } from 'react';
 
 const PERIODS = ['Day', 'Week', 'Month', 'Year'] as const;
@@ -120,29 +120,11 @@ export default function StepCounterPanel({ ctaHref }: { ctaHref: string }) {
                         <Play className="h-5 w-5" aria-hidden="true" fill="currentColor" />
                         Start counting
                     </Link>
-                    <p className="text-muted-foreground pt-2 text-[13px] leading-relaxed sm:text-[14px]">
-                        Your phone will ask for motion access. Tap Allow, or steps can&apos;t be counted. Then keep this page on screen, pocket or
-                        hand is fine.
-                    </p>
                 </div>
 
-                <Card className="animate-fade-slide-up shadow-sm transition-shadow duration-300 hover:shadow-md" style={fadeIn(140)}>
-                    <CardContent className="py-5">
-                        <div className="grid grid-cols-2 gap-3">
-                            <div>
-                                <strong className="block text-[20px] font-bold tabular-nums">0m</strong>
-                                <span className="text-muted-foreground text-[13px]">active today</span>
-                            </div>
-                            <div>
-                                <strong className="block text-[20px] font-bold tabular-nums">{DAILY_GOAL.toLocaleString()}</strong>
-                                <span className="text-muted-foreground text-[13px]">to go today</span>
-                            </div>
-                        </div>
-                        <p className="text-muted-foreground pt-3 text-[13px] leading-relaxed">
-                            Distance and calories are estimates worked out from your step count, not measurements.
-                        </p>
-                    </CardContent>
-                </Card>
+                <div className="animate-fade-slide-up" style={fadeIn(100)}>
+                    <AchievementsPanel />
+                </div>
             </div>
 
             <div className="flex flex-col gap-4 sm:gap-5">
@@ -181,49 +163,9 @@ export default function StepCounterPanel({ ctaHref }: { ctaHref: string }) {
                         <p className="text-muted-foreground pt-4 text-[12px]">No steps recorded in the last 7 days.</p>
                     </CardContent>
                 </Card>
-
-                <div className="animate-fade-slide-up" style={fadeIn(200)}>
-                    <AchievementsPanel />
-                </div>
             </div>
 
-            <div className="grid gap-4 sm:gap-5 lg:col-span-2 lg:grid-cols-2">
-                <Card className="animate-fade-slide-up shadow-sm transition-shadow duration-300 hover:shadow-md" style={fadeIn(240)}>
-                    <CardHeader className="flex-row items-start gap-3 space-y-0">
-                        <span className="mt-0.5 flex h-8 w-8 flex-none items-center justify-center rounded-full bg-[#215AA8]/10 text-[#215AA8]">
-                            <Activity className="h-4 w-4" aria-hidden="true" />
-                        </span>
-                        <div>
-                            <h2 className="text-[15px] font-semibold">Activity Breakdown</h2>
-                            <p className="text-muted-foreground pt-0.5 text-[13px]">By walking pace, measured from your rhythm.</p>
-                        </div>
-                    </CardHeader>
-                    <CardContent className="pt-4">
-                        <div className="bg-secondary/60 text-muted-foreground rounded-lg p-4 text-center text-[13px]">
-                            No pace recorded today yet. This fills in once a walk locks on to a rhythm the detector can measure.
-                        </div>
-                    </CardContent>
-                </Card>
-
-                <Card className="animate-fade-slide-up shadow-sm transition-shadow duration-300 hover:shadow-md" style={fadeIn(280)}>
-                    <CardHeader className="flex-row items-start gap-3 space-y-0">
-                        <span className="mt-0.5 flex h-8 w-8 flex-none items-center justify-center rounded-full bg-[#00B0C7]/10 text-[#00B0C7]">
-                            <TrendingUp className="h-4 w-4" aria-hidden="true" />
-                        </span>
-                        <div>
-                            <h2 className="text-[15px] font-semibold">Step Trend</h2>
-                            <p className="text-muted-foreground pt-0.5 text-[13px]">Running total across today.</p>
-                        </div>
-                    </CardHeader>
-                    <CardContent className="pt-4">
-                        <div className="bg-secondary/60 text-muted-foreground rounded-lg p-4 text-center text-[13px]">
-                            The trend draws itself as you walk. Start a session to see today take shape.
-                        </div>
-                    </CardContent>
-                </Card>
-            </div>
-
-            <div className="animate-fade-slide-up lg:col-span-2" style={fadeIn(320)}>
+            <div className="animate-fade-slide-up lg:col-span-2" style={fadeIn(240)}>
                 <StreakCard ctaHref={ctaHref} />
             </div>
         </div>

@@ -127,13 +127,6 @@ export default function FormShow({
                         </form>
                     </CardContent>
                 </Card>
-
-                <div className="animate-fade-slide-up mt-4 flex flex-col items-center gap-1 text-center" style={{ animationDelay: '120ms' }}>
-                    <p className="text-muted-foreground text-sm">Each step is saved when you continue, so you can leave and come back.</p>
-                    <Link href={route('dashboard')} className="text-muted-foreground text-sm font-medium underline-offset-4 hover:underline">
-                        Skip for now
-                    </Link>
-                </div>
             </div>
         </AppLayout>
     );

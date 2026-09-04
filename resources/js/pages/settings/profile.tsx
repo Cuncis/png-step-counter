@@ -1,25 +1,29 @@
-import { type BreadcrumbItem, type SharedData } from '@/types';
+import { type FormStepDefinition, type FormSubmissionData, type SharedData } from '@/types';
 import { Transition } from '@headlessui/react';
 import { Head, Link, useForm, usePage } from '@inertiajs/react';
 import { FormEventHandler } from 'react';
 
 import DeleteUser from '@/components/delete-user';
+import FormStepReviewCard from '@/components/form-step-review-card';
+import FullPageHeader from '@/components/full-page-header';
 import HeadingSmall from '@/components/heading-small';
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import AppLayout from '@/layouts/app-layout';
 import SettingsLayout from '@/layouts/settings/layout';
 
-const breadcrumbs: BreadcrumbItem[] = [
-    {
-        title: 'Profile settings',
-        href: '/settings/profile',
-    },
-];
-
-export default function Profile({ mustVerifyEmail, status }: { mustVerifyEmail: boolean; status?: string }) {
+export default function Profile({
+    mustVerifyEmail,
+    status,
+    steps,
+    submission,
+}: {
+    mustVerifyEmail: boolean;
+    status?: string;
+    steps: FormStepDefinition[];
+    submission: FormSubmissionData;
+}) {
     const { auth } = usePage<SharedData>().props;
 
     const { data, setData, patch, errors, processing, recentlySuccessful } = useForm({
@@ -34,8 +38,10 @@ export default function Profile({ mustVerifyEmail, status }: { mustVerifyEmail: 
     };
 
     return (
-        <AppLayout breadcrumbs={breadcrumbs}>
+        <div className="bg-background min-h-screen">
             <Head title="Profile settings" />
+
+            <FullPageHeader />
 
             <SettingsLayout>
                 <div className="space-y-6">
@@ -113,8 +119,18 @@ export default function Profile({ mustVerifyEmail, status }: { mustVerifyEmail: 
                     </form>
                 </div>
 
+                <div className="space-y-6">
+                    <HeadingSmall title="Your health journey" description="The answers you gave during onboarding" />
+
+                    <div className="space-y-4">
+                        {steps.map((step) => (
+                            <FormStepReviewCard key={step.number} step={step} data={submission.steps[String(step.number)]} />
+                        ))}
+                    </div>
+                </div>
+
                 <DeleteUser />
             </SettingsLayout>
-        </AppLayout>
+        </div>
     );
 }

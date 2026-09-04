@@ -12,14 +12,6 @@ use Inertia\Response;
 
 class FormController extends Controller
 {
-    public function dashboard(Request $request): Response
-    {
-        return Inertia::render('dashboard', [
-            'submission' => $this->submissionProps($this->currentSubmission($request)),
-            'steps' => FormSteps::all(),
-        ]);
-    }
-
     public function index(Request $request): RedirectResponse
     {
         $submission = $this->currentSubmission($request);

@@ -1,4 +1,5 @@
 import InputError from '@/components/input-error';
+import { DatePicker } from '@/components/ui/date-picker';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -73,14 +74,26 @@ export default function FormStepField({
                 </div>
             )}
 
-            {!['textarea', 'select', 'number'].includes(field.type) && (
+            {field.type === 'date' && (
+                <DatePicker
+                    id={field.name}
+                    value={value}
+                    onChange={(next) => onChange(field.name, next)}
+                    placeholder={field.placeholder ?? `Select ${field.label.toLowerCase()}`}
+                    max="2010-12-31"
+                    fromYear={1900}
+                    toYear={2010}
+                    invalid={Boolean(error)}
+                />
+            )}
+
+            {!['textarea', 'select', 'number', 'date'].includes(field.type) && (
                 <Input
                     id={field.name}
                     type={field.type}
                     value={value}
                     onChange={(e) => onChange(field.name, e.target.value)}
                     placeholder={field.placeholder}
-                    max={field.type === 'date' ? new Date().toISOString().slice(0, 10) : undefined}
                     aria-invalid={Boolean(error)}
                 />
             )}

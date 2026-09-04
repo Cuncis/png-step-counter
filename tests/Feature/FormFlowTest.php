@@ -13,17 +13,9 @@ class FormFlowTest extends TestCase
 
     public function test_guests_are_redirected_to_the_login_page(): void
     {
-        $this->get('/dashboard')->assertRedirect('/login');
         $this->get('/form')->assertRedirect('/login');
         $this->get('/form/1')->assertRedirect('/login');
         $this->get('/review')->assertRedirect('/login');
-    }
-
-    public function test_authenticated_users_can_visit_the_dashboard(): void
-    {
-        $this->actingAs(User::factory()->create());
-
-        $this->get('/dashboard')->assertOk();
     }
 
     public function test_visiting_the_form_index_redirects_to_the_current_step(): void

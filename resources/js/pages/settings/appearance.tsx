@@ -1,23 +1,17 @@
 import { Head } from '@inertiajs/react';
 
 import AppearanceTabs from '@/components/appearance-tabs';
+import FullPageHeader from '@/components/full-page-header';
 import HeadingSmall from '@/components/heading-small';
-import { type BreadcrumbItem } from '@/types';
 
-import AppLayout from '@/layouts/app-layout';
 import SettingsLayout from '@/layouts/settings/layout';
-
-const breadcrumbs: BreadcrumbItem[] = [
-    {
-        title: 'Appearance settings',
-        href: '/settings/appearance',
-    },
-];
 
 export default function Appearance() {
     return (
-        <AppLayout breadcrumbs={breadcrumbs}>
+        <div className="bg-background min-h-screen">
             <Head title="Appearance settings" />
+
+            <FullPageHeader />
 
             <SettingsLayout>
                 <div className="space-y-6">
@@ -25,6 +19,6 @@ export default function Appearance() {
                     <AppearanceTabs />
                 </div>
             </SettingsLayout>
-        </AppLayout>
+        </div>
     );
 }

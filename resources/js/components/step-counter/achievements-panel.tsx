@@ -27,11 +27,11 @@ export default function AchievementsPanel({ unlocked = [] }: { unlocked?: string
             </CardHeader>
 
             <CardContent className="pt-4">
-                <ul className="grid grid-cols-3 gap-x-2 gap-y-4 sm:grid-cols-5 sm:gap-x-1.5">
+                <ul className="flex justify-center gap-3 overflow-x-auto pb-1 sm:gap-4">
                     {ACHIEVEMENTS.map(({ key, label, icon: Icon }) => {
                         const isUnlocked = unlocked.includes(key);
                         return (
-                            <li key={key} className="group flex flex-col items-center gap-1.5 text-center">
+                            <li key={key} className="group flex w-16 flex-none flex-col items-center gap-1.5 text-center sm:w-20">
                                 <span
                                     className={`flex h-12 w-12 items-center justify-center rounded-full border-2 transition-all duration-300 group-hover:scale-105 ${
                                         isUnlocked

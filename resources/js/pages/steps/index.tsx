@@ -1,3 +1,4 @@
+import FullPageHeader from '@/components/full-page-header';
 import InputError from '@/components/input-error';
 import AchievementsPanel from '@/components/step-counter/achievements-panel';
 import StepGauge from '@/components/step-counter/gauge';
@@ -9,9 +10,7 @@ import { Button, buttonVariants } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import AppLayout from '@/layouts/app-layout';
 import { estimateCalories, estimateDistanceKm } from '@/lib/step-estimates';
-import { type BreadcrumbItem } from '@/types';
 import { Head, router, useForm } from '@inertiajs/react';
 import { Flame, LoaderCircle, MapPin, Paperclip, Upload } from 'lucide-react';
 import { FormEventHandler, useMemo, useRef, useState } from 'react';
@@ -21,8 +20,6 @@ const WEEKLY_GOAL = 70_000;
 
 const PERIODS = ['Day', 'Week', 'Month', 'Year'] as const;
 type Period = (typeof PERIODS)[number];
-
-const breadcrumbs: BreadcrumbItem[] = [{ title: 'Steps', href: '/steps' }];
 
 interface StepsPageProps {
     today: { steps: number; evidenceUrl: string | null };
@@ -72,14 +69,13 @@ export default function StepsIndex({ today, week, month, year, streakDays, unloc
 
     const now = useMemo(() => new Date(), []);
 
-    const periodStats: Record<Period, { value: number; goal: number; title: string; subtitle: string; recordedNote: string; toGoLabel: string }> = {
+    const periodStats: Record<Period, { value: number; goal: number; title: string; subtitle: string; recordedNote: string }> = {
         Day: {
             value: today.steps,
             goal: DAILY_GOAL,
             title: 'Today',
             subtitle: 'Your logged step count for today.',
             recordedNote: 'No earlier day to compare with yet.',
-            toGoLabel: 'to go today',
         },
         Week: {
             value: week.total,
@@ -87,7 +83,6 @@ export default function StepsIndex({ today, week, month, year, streakDays, unloc
             title: 'This Week',
             subtitle: 'Your total step count this week.',
             recordedNote: `${week.daysRecorded} of 7 days recorded this week.`,
-            toGoLabel: 'to go this week',
         },
         Month: {
             value: month.total,
@@ -95,7 +90,6 @@ export default function StepsIndex({ today, week, month, year, streakDays, unloc
             title: 'This Month',
             subtitle: 'Your total step count this month.',
             recordedNote: `${month.daysRecorded} of ${daysInMonth(now)} days recorded this month.`,
-            toGoLabel: 'to go this month',
         },
         Year: {
             value: year.total,
@@ -103,7 +97,6 @@ export default function StepsIndex({ today, week, month, year, streakDays, unloc
             title: 'This Year',
             subtitle: 'Your total step count this year.',
             recordedNote: `${year.daysRecorded} of ${daysInYear(now)} days recorded this year.`,
-            toGoLabel: 'to go this year',
         },
     };
 
@@ -112,8 +105,10 @@ export default function StepsIndex({ today, week, month, year, streakDays, unloc
     const shareUrl = typeof window !== 'undefined' ? window.location.href : '';
 
     return (
-        <AppLayout breadcrumbs={breadcrumbs}>
+        <div className="bg-background min-h-screen">
             <Head title="Steps" />
+
+            <FullPageHeader />
 
             <div className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
                 <h1 className="text-2xl font-semibold tracking-tight">Log your steps</h1>
@@ -281,26 +276,6 @@ export default function StepsIndex({ today, week, month, year, streakDays, unloc
                                 </form>
                             </CardContent>
                         </Card>
-
-                        <Card className="shadow-sm">
-                            <CardContent className="py-5">
-                                <div className="grid grid-cols-2 gap-3">
-                                    <div>
-                                        <strong className="block text-[20px] font-bold tabular-nums">0m</strong>
-                                        <span className="text-muted-foreground text-[13px]">active {active.title.toLowerCase()}</span>
-                                    </div>
-                                    <div>
-                                        <strong className="block text-[20px] font-bold tabular-nums">
-                                            {Math.max(0, active.goal - active.value).toLocaleString()}
-                                        </strong>
-                                        <span className="text-muted-foreground text-[13px]">{active.toGoLabel}</span>
-                                    </div>
-                                </div>
-                                <p className="text-muted-foreground pt-3 text-[13px] leading-relaxed">
-                                    Distance and calories are estimates worked out from your step count, not measurements.
-                                </p>
-                            </CardContent>
-                        </Card>
                     </div>
 
                     <div className="flex flex-col gap-4 sm:gap-5">
@@ -355,6 +330,6 @@ export default function StepsIndex({ today, week, month, year, streakDays, unloc
                     </div>
                 </div>
             </div>
-        </AppLayout>
+        </div>
     );
 }

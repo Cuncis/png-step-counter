@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Settings;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Settings\ProfileUpdateRequest;
+use App\Support\FormSteps;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -18,9 +19,17 @@ class ProfileController extends Controller
      */
     public function edit(Request $request): Response
     {
+        $submission = $request->user()->formSubmission;
+
         return Inertia::render('settings/profile', [
             'mustVerifyEmail' => $request->user() instanceof MustVerifyEmail,
             'status' => $request->session()->get('status'),
+            'steps' => FormSteps::all(),
+            'submission' => [
+                'current_step' => $submission?->current_step ?? 1,
+                'is_complete' => $submission?->is_complete ?? false,
+                'steps' => $submission?->steps ?? [],
+            ],
         ]);
     }
 
