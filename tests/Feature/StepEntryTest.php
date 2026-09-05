@@ -103,6 +103,9 @@ class StepEntryTest extends TestCase
 
         $response->assertOk();
         $response->assertInertia(fn ($page) => $page
+            ->where('personal.periods.day.value', 4200)
+            ->where('personal.streakDays', 1)
+            ->where('personal.lifetimeSteps', 4200)
             ->where('personal.unlockedAchievements', ['first-1000'])
         );
     }

@@ -31,6 +31,7 @@ export function DatePicker({
     fromYear = 1900,
     toYear,
     invalid,
+    className,
 }: {
     id?: string;
     value: string;
@@ -40,6 +41,7 @@ export function DatePicker({
     fromYear?: number;
     toYear?: number;
     invalid?: boolean;
+    className?: string;
 }) {
     const [open, setOpen] = React.useState(false);
 
@@ -58,6 +60,7 @@ export function DatePicker({
                         'hover:bg-accent/40 focus:outline-hidden focus:ring-2 focus:ring-ring focus:ring-offset-2',
                         'aria-invalid:border-destructive',
                         !selected && 'text-muted-foreground',
+                        className,
                     )}
                 >
                     <span>

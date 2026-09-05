@@ -2,10 +2,13 @@ import AppLogo from '@/components/app-logo';
 import { CountryFlag } from '@/components/country-flag';
 import InputError from '@/components/input-error';
 import AchievementUnlockedDialog from '@/components/step-counter/achievement-unlocked-dialog';
-import AchievementsPanel from '@/components/step-counter/achievements-panel';
+import AchievementsPanel, { ACHIEVEMENTS } from '@/components/step-counter/achievements-panel';
+import StepGauge from '@/components/step-counter/gauge';
+import StreakCard from '@/components/step-counter/streak-card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { DatePicker } from '@/components/ui/date-picker';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
@@ -24,19 +27,24 @@ import {
     type ChallengeSortField,
 } from '@/types/challenge';
 import { Head, Link, router, useForm, usePage } from '@inertiajs/react';
-import { ArrowDown, ArrowUp, Calendar, Footprints, Globe, LoaderCircle, Medal, PartyPopper, Plus, Trophy } from 'lucide-react';
+import { ArrowDown, ArrowUp, CheckCircle2, Crown, Footprints, Globe, LoaderCircle, Medal, PartyPopper, Plus, X } from 'lucide-react';
 import { FormEventHandler, useRef, useState } from 'react';
 
-const MEDAL_COLORS: Record<number, string> = { 1: '#D4AF37', 2: '#A8A9AD', 3: '#CD7F32' };
+const RANK_BADGES: Record<number, { icon: typeof Crown; color: string }> = {
+    1: { icon: Crown, color: '#D4AF37' },
+    2: { icon: Medal, color: '#A8A9AD' },
+    3: { icon: Medal, color: '#CD7F32' },
+};
 
 function RankBadge({ rank }: { rank: number }) {
-    const color = MEDAL_COLORS[rank];
+    const badge = RANK_BADGES[rank];
 
-    if (!color) {
+    if (!badge) {
         return <span className="text-sm font-bold text-gray-400">#{rank}</span>;
     }
 
-    return <Medal className="h-5 w-5" style={{ color }} aria-hidden="true" />;
+    const Icon = badge.icon;
+    return <Icon className="h-5 w-5" style={{ color: badge.color }} aria-hidden="true" />;
 }
 
 interface HomeProps {
@@ -53,7 +61,12 @@ interface HomeProps {
         total: number;
     };
     authCountry: { code: string; name: string } | null;
-    personal: { unlockedAchievements: string[] } | null;
+    personal: {
+        periods: Record<'day' | 'week' | 'month' | 'year', { value: number; goal: number }>;
+        streakDays: number;
+        lifetimeSteps: number;
+        unlockedAchievements: string[];
+    } | null;
 }
 
 function formatShortDate(iso: string): string {
@@ -164,11 +177,7 @@ function Leaderboard({ countries }: { countries: ChallengeCountrySummary[] }) {
 
     return (
         <section>
-            <h2 className="flex items-center gap-2 text-xl font-bold text-gray-900">
-                <Trophy className="h-5 w-5 text-[#215AA8]" aria-hidden="true" /> Country Leaderboard
-            </h2>
-
-            <Card className="mt-4 overflow-hidden shadow-sm">
+            <Card className="overflow-hidden shadow-sm">
                 <CardContent className="divide-y divide-gray-100 p-0">
                     {ranked.map((country) => (
                         <div
@@ -282,7 +291,7 @@ function ActivityTable({
                 date: next.date === undefined ? date : next.date,
                 page: next.page ?? (isFilterChange ? 1 : currentPage),
             },
-            { only: ['activity'], preserveState: true, preserveScroll: true },
+            { only: ['activity'], preserveState: true, preserveScroll: true, showProgress: false },
         );
     }
 
@@ -312,35 +321,41 @@ function ActivityTable({
 
     return (
         <section>
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                <h2 className="flex items-center gap-2 text-xl font-bold text-gray-900">
-                    <Calendar className="h-5 w-5 text-[#215AA8]" aria-hidden="true" /> Daily Activity
-                </h2>
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-start">
+                <Select value={country ?? 'all'} onValueChange={(next) => updateQuery({ country: next === 'all' ? null : next })}>
+                    <SelectTrigger className="h-9 w-full sm:w-[170px]">
+                        <SelectValue placeholder="All countries" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="all">All countries</SelectItem>
+                        {countries.map((c) => (
+                            <SelectItem key={c.code} value={c.code}>
+                                <span className="flex items-center gap-1.5">
+                                    <CountryFlag code={c.code} />
+                                    {c.name}
+                                </span>
+                            </SelectItem>
+                        ))}
+                    </SelectContent>
+                </Select>
 
-                <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-                    <Select value={country ?? 'all'} onValueChange={(next) => updateQuery({ country: next === 'all' ? null : next })}>
-                        <SelectTrigger className="h-9 w-full sm:w-[170px]">
-                            <SelectValue placeholder="All countries" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="all">All countries</SelectItem>
-                            {countries.map((c) => (
-                                <SelectItem key={c.code} value={c.code}>
-                                    <span className="flex items-center gap-1.5">
-                                        <CountryFlag code={c.code} />
-                                        {c.name}
-                                    </span>
-                                </SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
-
-                    <Input
-                        type="date"
+                <div className="relative w-full sm:w-[190px]">
+                    <DatePicker
                         value={date ?? ''}
-                        onChange={(e) => updateQuery({ date: e.target.value || null })}
-                        className="h-9 w-full sm:w-[160px]"
+                        onChange={(next) => updateQuery({ date: next || null })}
+                        placeholder="Filter by date"
+                        className="h-9"
                     />
+                    {date && (
+                        <button
+                            type="button"
+                            onClick={() => updateQuery({ date: null })}
+                            aria-label="Clear date filter"
+                            className="absolute top-1/2 right-8 -translate-y-1/2 rounded-sm p-0.5 text-gray-400 hover:text-gray-600"
+                        >
+                            <X className="h-3.5 w-3.5" aria-hidden="true" />
+                        </button>
+                    )}
                 </div>
             </div>
 
@@ -388,6 +403,188 @@ function ActivityTable({
 
                 <Pagination currentPage={currentPage} lastPage={lastPage} onPageChange={(page) => updateQuery({ page })} />
             </Card>
+        </section>
+    );
+}
+
+const PERIOD_TABS = ['Day', 'Week', 'Month', 'Year'] as const;
+type PeriodTab = (typeof PERIOD_TABS)[number];
+const PERIOD_KEYS: Record<PeriodTab, 'day' | 'week' | 'month' | 'year'> = { Day: 'day', Week: 'week', Month: 'month', Year: 'year' };
+
+function MyStepsPanel({
+    personal,
+    name,
+    country,
+    onViewAchievements,
+}: {
+    personal: NonNullable<HomeProps['personal']>;
+    name: string;
+    country: { code: string; name: string } | null;
+    onViewAchievements: () => void;
+}) {
+    const [period, setPeriod] = useState<PeriodTab>('Day');
+    const { value, goal } = personal.periods[PERIOD_KEYS[period]];
+    const remaining = Math.max(0, goal - value);
+    const achievementsTotal = ACHIEVEMENTS.length;
+
+    return (
+        <div className="grid gap-4 sm:grid-cols-2">
+            <Card className="shadow-sm">
+                <CardContent className="pt-6">
+                    <div className="mb-2 flex justify-center gap-1">
+                        {PERIOD_TABS.map((label) => (
+                            <button
+                                key={label}
+                                type="button"
+                                onClick={() => setPeriod(label)}
+                                className={cn(
+                                    'rounded-full px-3 py-1 text-xs font-semibold transition-colors',
+                                    period === label ? 'bg-[#215AA8] text-white' : 'text-gray-500 hover:bg-gray-100',
+                                )}
+                            >
+                                {label}
+                            </button>
+                        ))}
+                    </div>
+                    <StepGauge value={value} goal={goal} label={period} />
+
+                    <div className="mt-4 flex items-center justify-center gap-1.5 border-t border-gray-100 pt-4 text-sm">
+                        {remaining === 0 ? (
+                            <>
+                                <CheckCircle2 className="h-4 w-4 text-[#215AA8]" aria-hidden="true" />
+                                <span className="font-semibold text-[#215AA8]">Goal reached for this {period.toLowerCase()}!</span>
+                            </>
+                        ) : (
+                            <span className="text-gray-600">
+                                <span className="font-bold text-gray-900 tabular-nums">{remaining.toLocaleString()}</span> steps to reach your{' '}
+                                {period.toLowerCase()} goal
+                            </span>
+                        )}
+                    </div>
+                </CardContent>
+            </Card>
+
+            <Card className="shadow-sm">
+                <CardContent className="flex flex-col justify-center gap-4 py-6">
+                    <div className="flex items-center gap-2 text-sm">
+                        <span className="font-bold text-gray-900">{name}</span>
+                        {country && (
+                            <>
+                                <span className="text-gray-300">·</span>
+                                <CountryFlag code={country.code} />
+                                <span className="text-gray-600">{country.name}</span>
+                            </>
+                        )}
+                    </div>
+
+                    <StreakCard streakDays={personal.streakDays} bare />
+
+                    <div className="grid grid-cols-2 gap-2 border-t border-gray-100 pt-4 text-center">
+                        <div>
+                            <p className="text-lg font-bold text-gray-900 tabular-nums">{personal.lifetimeSteps.toLocaleString()}</p>
+                            <p className="text-muted-foreground text-xs">Lifetime steps</p>
+                        </div>
+                        <button type="button" onClick={onViewAchievements} className="rounded-lg transition-colors hover:bg-gray-50">
+                            <p className="text-lg font-bold text-[#215AA8] tabular-nums">
+                                {personal.unlockedAchievements.length}/{achievementsTotal}
+                            </p>
+                            <p className="text-muted-foreground text-xs">Achievements</p>
+                        </button>
+                    </div>
+                </CardContent>
+            </Card>
+        </div>
+    );
+}
+
+function MyStepsGuestPrompt() {
+    return (
+        <Card className="shadow-sm">
+            <CardContent className="flex flex-col items-center gap-3 py-10 text-center">
+                <span className="flex h-12 w-12 items-center justify-center rounded-full bg-[#215AA8]/10 text-[#215AA8]">
+                    <Footprints className="h-6 w-6" aria-hidden="true" />
+                </span>
+                <p className="text-gray-600">Log in to track your own steps and streak.</p>
+                <Link href={route('login')} className={cn(buttonVariants(), 'bg-[#215AA8] hover:bg-[#252B69]')}>
+                    Log in
+                </Link>
+            </CardContent>
+        </Card>
+    );
+}
+
+const HOME_TABS = ['My Steps', 'Daily Activity', 'Achievements', 'Country Leaderboard'] as const;
+type HomeTab = (typeof HOME_TABS)[number];
+
+function HomeTabs({
+    personal,
+    countries,
+    activity,
+    authCountry,
+}: {
+    personal: HomeProps['personal'];
+    countries: ChallengeCountrySummary[];
+    activity: HomeProps['activity'];
+    authCountry: HomeProps['authCountry'];
+}) {
+    const { auth } = usePage<SharedData>().props;
+    const [tab, setTab] = useState<HomeTab>('My Steps');
+
+    return (
+        <section>
+            <div className="border-b border-gray-200">
+                <nav className="-mb-px flex gap-6 overflow-x-auto" role="tablist" aria-label="Homepage sections">
+                    {HOME_TABS.map((label) => (
+                        <button
+                            key={label}
+                            type="button"
+                            role="tab"
+                            aria-selected={tab === label}
+                            onClick={() => setTab(label)}
+                            className={cn(
+                                'border-b-2 px-1 py-3 text-sm font-semibold whitespace-nowrap transition-colors',
+                                tab === label
+                                    ? 'border-[#215AA8] text-[#215AA8]'
+                                    : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700',
+                            )}
+                        >
+                            {label}
+                        </button>
+                    ))}
+                </nav>
+            </div>
+
+            <div className="mt-6">
+                {tab === 'My Steps' &&
+                    (personal ? (
+                        <MyStepsPanel
+                            personal={personal}
+                            name={auth.user?.name ?? ''}
+                            country={authCountry}
+                            onViewAchievements={() => setTab('Achievements')}
+                        />
+                    ) : (
+                        <MyStepsGuestPrompt />
+                    ))}
+
+                {tab === 'Daily Activity' && (
+                    <ActivityTable
+                        entries={activity.entries}
+                        sort={activity.sort}
+                        direction={activity.direction}
+                        country={activity.country}
+                        date={activity.date}
+                        current_page={activity.current_page}
+                        last_page={activity.last_page}
+                        total={activity.total}
+                        countries={countries}
+                    />
+                )}
+
+                {tab === 'Achievements' && <AchievementsPanel unlocked={personal?.unlockedAchievements ?? []} />}
+
+                {tab === 'Country Leaderboard' && <Leaderboard countries={countries} />}
+            </div>
         </section>
     );
 }
@@ -607,21 +804,7 @@ export default function Home({ regional, countries, activity, authCountry, perso
 
                 <CountryCards countries={countries} />
 
-                {personal && <AchievementsPanel unlocked={personal.unlockedAchievements} />}
-
-                <Leaderboard countries={countries} />
-
-                <ActivityTable
-                    entries={activity.entries}
-                    sort={activity.sort}
-                    direction={activity.direction}
-                    country={activity.country}
-                    date={activity.date}
-                    current_page={activity.current_page}
-                    last_page={activity.last_page}
-                    total={activity.total}
-                    countries={countries}
-                />
+                <HomeTabs personal={personal} countries={countries} activity={activity} authCountry={authCountry} />
 
                 <section className="rounded-2xl bg-[#215AA8] px-6 py-10 text-center text-white">
                     <p className="text-lg font-bold">3 Countries. 1 Challenge. 10 Million Steps.</p>
