@@ -92,6 +92,39 @@ class StepEntryTest extends TestCase
         Storage::disk('public')->assertExists($entries->first()->evidence_path);
     }
 
+    public function test_uploaded_evidence_images_are_compressed_and_resized(): void
+    {
+        Storage::fake('public');
+        $user = $this->userWithCompletedJourney();
+
+        $this->actingAs($user)->post('/steps', [
+            'steps' => 5000,
+            'evidence' => UploadedFile::fake()->image('evidence.png', 3000, 2000),
+        ]);
+
+        $entry = StepEntry::where('user_id', $user->id)->first();
+        $this->assertStringEndsWith('.jpg', $entry->evidence_path);
+
+        [$width, $height, $type] = getimagesize(Storage::disk('public')->path($entry->evidence_path));
+        $this->assertSame(IMAGETYPE_JPEG, $type);
+        $this->assertLessThanOrEqual(1600, max($width, $height));
+    }
+
+    public function test_pdf_evidence_is_stored_without_compression(): void
+    {
+        Storage::fake('public');
+        $user = $this->userWithCompletedJourney();
+
+        $this->actingAs($user)->post('/steps', [
+            'steps' => 5000,
+            'evidence' => UploadedFile::fake()->create('evidence.pdf', 100, 'application/pdf'),
+        ]);
+
+        $entry = StepEntry::where('user_id', $user->id)->first();
+        $this->assertStringEndsWith('.pdf', $entry->evidence_path);
+        Storage::disk('public')->assertExists($entry->evidence_path);
+    }
+
     public function test_homepage_reflects_the_users_unlocked_achievements(): void
     {
         Storage::fake('public');

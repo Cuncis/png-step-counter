@@ -24,7 +24,7 @@ class StoreStepEntryRequest extends FormRequest
     {
         return [
             'steps' => ['required', 'integer', 'min:0', 'max:200000'],
-            'evidence' => ['required', 'file', 'mimes:jpg,jpeg,png,heic,pdf', 'max:5120'],
+            'evidence' => ['required', 'file', 'mimes:jpg,jpeg,png,heic,pdf', 'max:2048'],
         ];
     }
 }

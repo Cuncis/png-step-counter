@@ -775,7 +775,7 @@ function LogStepsDialog({
                             </label>
                             <span className="text-muted-foreground truncate text-sm">{data.evidence ? data.evidence.name : 'No file chosen'}</span>
                         </div>
-                        <p className="text-muted-foreground text-xs">JPG, PNG, HEIC, or PDF, up to 5MB.</p>
+                        <p className="text-muted-foreground text-xs">JPG, PNG, HEIC, or PDF, up to 2MB.</p>
                         <InputError message={clientErrors.evidence || errors.evidence} />
                     </div>
 

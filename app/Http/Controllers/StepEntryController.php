@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreStepEntryRequest;
 use App\Models\StepEntry;
+use App\Support\EvidenceImage;
 use App\Support\StepStats;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Storage;
@@ -17,7 +18,7 @@ class StepEntryController extends Controller
 
         $previouslyUnlocked = StepStats::unlockedAchievements($user->stepEntries()->orderBy('date')->get());
 
-        $path = $request->file('evidence')->store("step-evidence/{$user->id}", 'public');
+        $path = EvidenceImage::store($request->file('evidence'), "step-evidence/{$user->id}");
 
         $existing = StepEntry::where('user_id', $user->id)->where('date', $date)->first();
 
