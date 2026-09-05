@@ -1,4 +1,4 @@
-import { Lottie } from 'lottie-react';
+import { LottieLight } from 'lottie-react';
 
 const WALKING_ANIMATIONS = {
     male: '/animations/boy-walking.json',
@@ -8,5 +8,5 @@ const WALKING_ANIMATIONS = {
 export default function WalkingAnimation({ gender }: { gender: string | null }) {
     const src = gender === 'female' ? WALKING_ANIMATIONS.female : WALKING_ANIMATIONS.male;
 
-    return <Lottie src={src} className="mx-auto h-28 w-28" loop autoplay />;
+    return <LottieLight src={src} className="mx-auto h-28 w-28" loop autoplay />;
 }
