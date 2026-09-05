@@ -1,12 +1,49 @@
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import { Award, CalendarCheck, Flame, Footprints, Trophy, type LucideIcon } from 'lucide-react';
+import {
+    Award,
+    BadgeCheck,
+    CalendarCheck,
+    CalendarClock,
+    CalendarDays,
+    CalendarRange,
+    Crown,
+    Diamond,
+    Flame,
+    Footprints,
+    Gem,
+    Medal,
+    Mountain,
+    Rocket,
+    ShieldCheck,
+    Sparkles,
+    Star,
+    Sun,
+    Sunrise,
+    Trophy,
+    type LucideIcon,
+} from 'lucide-react';
 
-const ACHIEVEMENTS: { key: string; label: string; icon: LucideIcon }[] = [
+export const ACHIEVEMENTS: { key: string; label: string; icon: LucideIcon }[] = [
     { key: 'first-1000', label: 'First 1,000', icon: Footprints },
     { key: 'five-thousand-day', label: '5,000 in a day', icon: Flame },
     { key: 'ten-thousand-day', label: '10,000 in a day', icon: Trophy },
-    { key: 'seven-day-streak', label: '7-day streak', icon: CalendarCheck },
+    { key: 'fifteen-thousand-day', label: '15,000 in a day', icon: Rocket },
+    { key: 'twenty-thousand-day', label: '20,000 in a day', icon: Crown },
+    { key: 'three-day-streak', label: '3-day streak', icon: CalendarCheck },
+    { key: 'seven-day-streak', label: '7-day streak', icon: CalendarDays },
+    { key: 'fourteen-day-streak', label: '14-day streak', icon: CalendarRange },
+    { key: 'thirty-day-streak', label: '30-day streak', icon: CalendarClock },
+    { key: 'hundred-day-streak', label: '100-day streak', icon: Medal },
+    { key: 'total-50k', label: '50,000 lifetime steps', icon: Star },
+    { key: 'total-100k', label: '100,000 lifetime steps', icon: Sparkles },
+    { key: 'total-500k', label: '500,000 lifetime steps', icon: Gem },
+    { key: 'total-1m', label: '1,000,000 lifetime steps', icon: Diamond },
+    { key: 'total-5m', label: '5,000,000 lifetime steps', icon: Mountain },
     { key: 'thirty-day-month', label: '30 days in a month', icon: Award },
+    { key: 'first-week-logged', label: '7 days logged', icon: BadgeCheck },
+    { key: 'hundred-days-logged', label: '100 days logged', icon: ShieldCheck },
+    { key: 'weekend-warrior', label: 'Weekend warrior', icon: Sun },
+    { key: 'early-bird', label: 'Early bird', icon: Sunrise },
 ];
 
 export default function AchievementsPanel({ unlocked = [], layout = 'grid' }: { unlocked?: string[]; layout?: 'grid' | 'horizontal' }) {

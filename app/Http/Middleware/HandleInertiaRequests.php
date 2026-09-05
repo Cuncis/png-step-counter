@@ -47,6 +47,7 @@ class HandleInertiaRequests extends Middleware
             ],
             'flash' => [
                 'success' => $request->session()->get('success'),
+                'newAchievements' => $request->session()->get('newAchievements', []),
             ],
         ]);
     }

@@ -19,7 +19,6 @@ Route::middleware(['auth'])->group(function () {
     Route::get('review', [FormController::class, 'review'])->name('form.review');
 
     Route::middleware(EnsureJourneyIsComplete::class)->group(function () {
-        Route::get('steps', [StepEntryController::class, 'index'])->name('steps.index');
         Route::post('steps', [StepEntryController::class, 'store'])->name('steps.store');
     });
 });

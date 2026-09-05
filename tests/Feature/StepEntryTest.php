@@ -24,33 +24,24 @@ class StepEntryTest extends TestCase
 
     public function test_guests_are_redirected_to_the_login_page(): void
     {
-        $this->get('/steps')->assertRedirect('/login');
         $this->post('/steps', ['steps' => 1000])->assertRedirect('/login');
     }
 
-    public function test_authenticated_users_can_visit_the_steps_page(): void
-    {
-        $this->actingAs($this->userWithCompletedJourney());
-
-        $this->get('/steps')->assertOk();
-    }
-
-    public function test_users_with_no_journey_progress_are_redirected_from_steps_to_the_journey(): void
+    public function test_users_with_no_journey_progress_are_redirected_to_the_journey(): void
     {
         $this->actingAs(User::factory()->create());
 
-        $this->get('/steps')->assertRedirect(route('form.index'));
         $this->post('/steps', ['steps' => 1000])->assertRedirect(route('form.index'));
     }
 
-    public function test_users_with_an_incomplete_journey_are_redirected_from_steps_to_the_journey(): void
+    public function test_users_with_an_incomplete_journey_are_redirected_to_the_journey(): void
     {
         $user = User::factory()->create();
         FormSubmission::factory()->create(['user_id' => $user->id, 'is_complete' => false]);
 
         $this->actingAs($user);
 
-        $this->get('/steps')->assertRedirect(route('form.index'));
+        $this->post('/steps', ['steps' => 1000])->assertRedirect(route('form.index'));
     }
 
     public function test_logging_steps_requires_steps_and_evidence(): void
@@ -70,7 +61,7 @@ class StepEntryTest extends TestCase
             'evidence' => UploadedFile::fake()->image('evidence.jpg'),
         ]);
 
-        $response->assertRedirect(route('steps.index'));
+        $response->assertRedirect(route('home'));
 
         $entry = StepEntry::where('user_id', $user->id)->where('date', today())->first();
         $this->assertNotNull($entry);
@@ -101,44 +92,26 @@ class StepEntryTest extends TestCase
         Storage::disk('public')->assertExists($entries->first()->evidence_path);
     }
 
-    public function test_steps_page_reflects_todays_entry_and_week_total(): void
+    public function test_homepage_reflects_the_users_unlocked_achievements(): void
     {
         Storage::fake('public');
         $user = $this->userWithCompletedJourney();
 
         StepEntry::factory()->for($user)->create(['date' => today(), 'steps' => 4200]);
-        StepEntry::factory()->for($user)->create(['date' => today()->subDay(), 'steps' => 3000]);
 
-        $response = $this->actingAs($user)->get('/steps');
+        $response = $this->actingAs($user)->get('/');
 
         $response->assertOk();
         $response->assertInertia(fn ($page) => $page
-            ->where('today.steps', 4200)
-            ->where('week.total', 7200)
-            ->where('week.offset', 0)
-            ->where('month.total', 7200)
-            ->where('year.total', 7200)
+            ->where('personal.unlockedAchievements', ['first-1000'])
         );
     }
 
-    public function test_week_param_browses_a_previous_week(): void
+    public function test_guests_see_no_personal_stats_on_the_homepage(): void
     {
-        $user = $this->userWithCompletedJourney();
+        $response = $this->get('/');
 
-        StepEntry::factory()->for($user)->create(['date' => today(), 'steps' => 4200]);
-        StepEntry::factory()->for($user)->create(['date' => today()->subWeek(), 'steps' => 5000]);
-
-        $thisWeek = $this->actingAs($user)->get('/steps');
-        $thisWeek->assertInertia(fn ($page) => $page->where('week.total', 4200));
-
-        $lastWeek = $this->actingAs($user)->get('/steps?week=-1');
-        $lastWeek->assertInertia(fn ($page) => $page
-            ->where('week.total', 5000)
-            ->where('week.offset', -1)
-        );
-
-        // Future weeks are clamped back to the current week.
-        $futureWeek = $this->actingAs($user)->get('/steps?week=1');
-        $futureWeek->assertInertia(fn ($page) => $page->where('week.offset', 0));
+        $response->assertOk();
+        $response->assertInertia(fn ($page) => $page->where('personal', null));
     }
 }

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Support\Countries;
 use App\Support\RegionalChallenge;
+use App\Support\StepStats;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -19,6 +20,9 @@ class HomeController extends Controller
             'countries' => RegionalChallenge::rankedCountries($countries),
             'activity' => RegionalChallenge::paginatedActivity($request),
             'authCountry' => $this->authCountry($request),
+            'personal' => $request->user() ? [
+                'unlockedAchievements' => StepStats::unlockedAchievements($request->user()->stepEntries()->orderBy('date')->get()),
+            ] : null,
         ]);
     }
 

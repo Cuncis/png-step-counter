@@ -6,62 +6,16 @@ use App\Http\Requests\StoreStepEntryRequest;
 use App\Models\StepEntry;
 use App\Support\StepStats;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
-use Inertia\Inertia;
-use Inertia\Response;
 
 class StepEntryController extends Controller
 {
-    public function index(Request $request): Response
-    {
-        $user = $request->user();
-        $entries = $user->stepEntries()->orderBy('date')->get();
-
-        $today = today();
-        $todayEntry = $entries->first(fn (StepEntry $entry) => $entry->date->isSameDay($today));
-
-        // Negative offsets browse past weeks; future weeks are never allowed.
-        $weekOffset = min(0, $request->integer('week', 0));
-        $weekReference = $today->copy()->addWeeks($weekOffset);
-        $weekStart = $weekReference->copy()->startOfWeek();
-        $weekEnd = $weekReference->copy()->endOfWeek();
-        $weekEntries = StepStats::stepsByDate($entries, $weekStart, $weekEnd);
-
-        $monthEntries = $entries->filter(fn (StepEntry $entry) => $entry->date->isSameMonth($today));
-        $yearEntries = $entries->filter(fn (StepEntry $entry) => $entry->date->isSameYear($today));
-
-        return Inertia::render('steps/index', [
-            'today' => [
-                'steps' => $todayEntry->steps ?? 0,
-                'evidenceUrl' => $todayEntry?->evidenceUrl(),
-            ],
-            'week' => [
-                // Cast to stdClass so an empty week still serializes as `{}`, not `[]`.
-                'entries' => (object) $weekEntries->all(),
-                'total' => $weekEntries->sum(),
-                'daysRecorded' => $weekEntries->count(),
-                'startDate' => $weekStart->toDateString(),
-                'offset' => $weekOffset,
-            ],
-            'month' => [
-                'total' => $monthEntries->sum('steps'),
-                'daysRecorded' => $monthEntries->count(),
-            ],
-            'year' => [
-                'total' => $yearEntries->sum('steps'),
-                'daysRecorded' => $yearEntries->count(),
-            ],
-            'streakDays' => StepStats::currentStreak($entries),
-            'achievements' => StepStats::achievementDefinitions(),
-            'unlockedAchievements' => StepStats::unlockedAchievements($entries),
-        ]);
-    }
-
     public function store(StoreStepEntryRequest $request): RedirectResponse
     {
         $user = $request->user();
         $date = today();
+
+        $previouslyUnlocked = StepStats::unlockedAchievements($user->stepEntries()->orderBy('date')->get());
 
         $path = $request->file('evidence')->store("step-evidence/{$user->id}", 'public');
 
@@ -82,6 +36,9 @@ class StepEntryController extends Controller
             ]);
         }
 
-        return redirect()->route('steps.index');
+        $nowUnlocked = StepStats::unlockedAchievements($user->stepEntries()->orderBy('date')->get());
+        $newAchievements = array_values(array_diff($nowUnlocked, $previouslyUnlocked));
+
+        return redirect()->route('home')->with('newAchievements', $newAchievements);
     }
 }

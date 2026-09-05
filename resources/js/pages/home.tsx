@@ -1,13 +1,19 @@
 import AppLogo from '@/components/app-logo';
 import { CountryFlag } from '@/components/country-flag';
 import InputError from '@/components/input-error';
+import AchievementUnlockedDialog from '@/components/step-counter/achievement-unlocked-dialog';
+import AchievementsPanel from '@/components/step-counter/achievements-panel';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Progress } from '@/components/ui/progress';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { UserMenuContent } from '@/components/user-menu-content';
+import { useInitials } from '@/hooks/use-initials';
 import { cn } from '@/lib/utils';
 import { type SharedData } from '@/types';
 import {
@@ -47,6 +53,7 @@ interface HomeProps {
         total: number;
     };
     authCountry: { code: string; name: string } | null;
+    personal: { unlockedAchievements: string[] } | null;
 }
 
 function formatShortDate(iso: string): string {
@@ -293,8 +300,9 @@ function ActivityTable({
             <button
                 type="button"
                 onClick={() => toggleSort(field)}
-                className={`flex items-center gap-1 text-xs font-bold tracking-wide text-gray-500 uppercase hover:text-gray-900 ${align === 'right' ? 'ml-auto' : ''
-                    }`}
+                className={`flex items-center gap-1 text-xs font-bold tracking-wide text-gray-500 uppercase hover:text-gray-900 ${
+                    align === 'right' ? 'ml-auto' : ''
+                }`}
             >
                 {label}
                 {active && (direction === 'asc' ? <ArrowUp className="h-3 w-3" /> : <ArrowDown className="h-3 w-3" />)}
@@ -386,6 +394,7 @@ function ActivityTable({
 
 function HomeHeader({ canLogSteps, onLogSteps }: { canLogSteps: boolean; onLogSteps: () => void }) {
     const { auth } = usePage<SharedData>().props;
+    const getInitials = useInitials();
 
     return (
         <header className="border-b border-gray-200 bg-white">
@@ -396,9 +405,22 @@ function HomeHeader({ canLogSteps, onLogSteps }: { canLogSteps: boolean; onLogSt
 
                 <nav className="flex items-center gap-3 text-sm">
                     {auth.user ? (
-                        <Link href={route('steps.index')} className="px-3 py-2 font-medium text-gray-700 hover:text-[#215AA8]">
-                            {auth.user.name}
-                        </Link>
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" className="h-10 gap-2 rounded-full pr-1 pl-3">
+                                    <span className="text-sm font-medium text-gray-700">{auth.user.name}</span>
+                                    <Avatar className="size-8 overflow-hidden rounded-full">
+                                        <AvatarImage src={auth.user.avatar} alt={auth.user.name} />
+                                        <AvatarFallback className="rounded-lg bg-neutral-200 text-black dark:bg-neutral-700 dark:text-white">
+                                            {getInitials(auth.user.name)}
+                                        </AvatarFallback>
+                                    </Avatar>
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent className="w-56" align="end">
+                                <UserMenuContent user={auth.user} />
+                            </DropdownMenuContent>
+                        </DropdownMenu>
                     ) : (
                         <Link href={route('login')} className="px-3 py-2 font-medium text-gray-700 hover:text-[#215AA8]">
                             Log in
@@ -570,8 +592,8 @@ function LogStepsDialog({
     );
 }
 
-export default function Home({ regional, countries, activity, authCountry }: HomeProps) {
-    const { auth } = usePage<SharedData>().props;
+export default function Home({ regional, countries, activity, authCountry, personal }: HomeProps) {
+    const { auth, flash } = usePage<SharedData>().props;
     const [dialogOpen, setDialogOpen] = useState(false);
 
     return (
@@ -584,6 +606,8 @@ export default function Home({ regional, countries, activity, authCountry }: Hom
                 <Hero regional={regional} />
 
                 <CountryCards countries={countries} />
+
+                {personal && <AchievementsPanel unlocked={personal.unlockedAchievements} />}
 
                 <Leaderboard countries={countries} />
 
@@ -609,6 +633,8 @@ export default function Home({ regional, countries, activity, authCountry }: Hom
             </main>
 
             <LogStepsDialog open={dialogOpen} onOpenChange={setDialogOpen} authCountry={authCountry} />
+
+            <AchievementUnlockedDialog keys={flash.newAchievements ?? []} />
         </div>
     );
 }

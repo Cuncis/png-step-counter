@@ -35,7 +35,7 @@ class AuthenticatedSessionController extends Controller
 
         $submission = $request->user()->formSubmission;
         $default = $submission?->is_complete
-            ? route('steps.index', absolute: false)
+            ? route('home', absolute: false)
             : route('form.index', absolute: false);
 
         return redirect()->intended($default);

@@ -44,7 +44,7 @@ class AuthenticationTest extends TestCase
         $response->assertRedirect(route('form.index', absolute: false));
     }
 
-    public function test_users_who_completed_the_journey_land_on_steps_on_login()
+    public function test_users_who_completed_the_journey_land_on_home_on_login()
     {
         $user = User::factory()->create();
         FormSubmission::factory()->create(['user_id' => $user->id, 'is_complete' => true]);
@@ -54,7 +54,7 @@ class AuthenticationTest extends TestCase
             'password' => 'password',
         ]);
 
-        $response->assertRedirect(route('steps.index', absolute: false));
+        $response->assertRedirect(route('home', absolute: false));
     }
 
     public function test_users_can_not_authenticate_with_invalid_password()

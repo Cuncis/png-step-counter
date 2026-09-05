@@ -46,7 +46,7 @@ export default function Review({ steps, submission }: { steps: FormStepDefinitio
 
                 {submission.is_complete && (
                     <div className="mt-6 flex justify-end">
-                        <Link href={route('steps.index')} className={cn(buttonVariants(), 'w-full gap-2 bg-[#215AA8] hover:bg-[#252B69] sm:w-auto')}>
+                        <Link href={route('home')} className={cn(buttonVariants(), 'w-full gap-2 bg-[#215AA8] hover:bg-[#252B69] sm:w-auto')}>
                             Go to Step Counter
                             <ArrowRight className="h-4 w-4" aria-hidden="true" />
                         </Link>

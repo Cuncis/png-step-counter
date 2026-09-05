@@ -5,7 +5,7 @@ import { Footprints, Lock } from 'lucide-react';
 
 export default function Welcome() {
     const { auth } = usePage<SharedData>().props;
-    const ctaHref = auth.user ? route('steps.index') : route('register');
+    const ctaHref = auth.user ? route('home') : route('register');
 
     return (
         <>
@@ -22,7 +22,7 @@ export default function Welcome() {
                     <nav className="flex items-center gap-3 text-sm">
                         {auth.user ? (
                             <Link
-                                href={route('steps.index')}
+                                href={route('home')}
                                 className="rounded-md bg-[#215AA8] px-4 py-2 font-medium text-white transition-colors hover:bg-[#252B69]"
                             >
                                 Steps
