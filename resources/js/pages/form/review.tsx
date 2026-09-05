@@ -1,16 +1,31 @@
+import AppLogo from '@/components/app-logo';
 import FormStepReviewCard from '@/components/form-step-review-card';
 import { Badge } from '@/components/ui/badge';
-import AppLayout from '@/layouts/app-layout';
-import { type BreadcrumbItem, type FormStepDefinition, type FormSubmissionData } from '@/types';
-import { Head } from '@inertiajs/react';
-import { CheckCircle2 } from 'lucide-react';
-
-const breadcrumbs: BreadcrumbItem[] = [{ title: 'Review answers', href: '/review' }];
+import { buttonVariants } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
+import { type FormStepDefinition, type FormSubmissionData } from '@/types';
+import { Head, Link } from '@inertiajs/react';
+import { ArrowRight, CheckCircle2, LogOut } from 'lucide-react';
 
 export default function Review({ steps, submission }: { steps: FormStepDefinition[]; submission: FormSubmissionData }) {
     return (
-        <AppLayout breadcrumbs={breadcrumbs}>
+        <div className="bg-background min-h-svh">
             <Head title="Review answers" />
+
+            <header className="flex h-16 items-center justify-between border-b px-4 sm:px-6">
+                <div className="flex items-center">
+                    <AppLogo />
+                </div>
+                <Link
+                    method="post"
+                    href={route('logout')}
+                    as="button"
+                    className="text-muted-foreground hover:text-foreground flex items-center gap-1.5 text-sm font-medium"
+                >
+                    <LogOut className="h-4 w-4" aria-hidden="true" />
+                    Log out
+                </Link>
+            </header>
 
             <div className="mx-auto w-full max-w-2xl px-4 py-8">
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -28,7 +43,16 @@ export default function Review({ steps, submission }: { steps: FormStepDefinitio
                         <FormStepReviewCard key={step.number} step={step} data={submission.steps[String(step.number)]} />
                     ))}
                 </div>
+
+                {submission.is_complete && (
+                    <div className="mt-6 flex justify-end">
+                        <Link href={route('steps.index')} className={cn(buttonVariants(), 'w-full gap-2 bg-[#215AA8] hover:bg-[#252B69] sm:w-auto')}>
+                            Go to Step Counter
+                            <ArrowRight className="h-4 w-4" aria-hidden="true" />
+                        </Link>
+                    </div>
+                )}
             </div>
-        </AppLayout>
+        </div>
     );
 }

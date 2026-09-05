@@ -72,10 +72,10 @@ export default function Profile({
                                 type="email"
                                 className="mt-1 block w-full"
                                 value={data.email}
-                                onChange={(e) => setData('email', e.target.value)}
                                 required
                                 autoComplete="username"
                                 placeholder="Email address"
+                                disabled
                             />
 
                             <InputError className="mt-2" message={errors.email} />

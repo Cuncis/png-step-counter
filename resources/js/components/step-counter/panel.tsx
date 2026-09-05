@@ -1,7 +1,6 @@
 import AchievementsPanel from '@/components/step-counter/achievements-panel';
 import StepGauge from '@/components/step-counter/gauge';
 import GoalDonut from '@/components/step-counter/goal-donut';
-import ShareMenu from '@/components/step-counter/share-menu';
 import StreakCard from '@/components/step-counter/streak-card';
 import WeekPanel from '@/components/step-counter/week-panel';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
@@ -59,10 +58,6 @@ export default function StepCounterPanel({ ctaHref }: { ctaHref: string }) {
                                         </button>
                                     ))}
                                 </div>
-                                <ShareMenu
-                                    url={typeof window !== 'undefined' ? window.location.href : ''}
-                                    text="Track my walking progress with P&G Step Counter."
-                                />
                             </div>
                         </CardHeader>
 
