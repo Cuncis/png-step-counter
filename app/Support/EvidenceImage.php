@@ -31,6 +31,10 @@ class EvidenceImage
             return $file->store($directory, 'public');
         }
 
+        if ($file->getMimeType() === 'image/jpeg') {
+            $source = self::applyExifOrientation($source, $file->getRealPath());
+        }
+
         $width = imagesx($source);
         $height = imagesy($source);
         $scale = min(1, self::MAX_DIMENSION / max($width, $height));
@@ -52,5 +56,41 @@ class EvidenceImage
         Storage::disk('public')->put($path, $encoded);
 
         return $path;
+    }
+
+    /**
+     * Rotates the decoded image so it displays upright, undoing the
+     * rotation flag phone cameras store in EXIF instead of the pixels
+     * themselves. Re-encoding with imagejpeg() drops EXIF entirely, so
+     * without this the photo would come out sideways.
+     *
+     * @param  \GdImage  $source
+     * @return \GdImage
+     */
+    private static function applyExifOrientation($source, string $path)
+    {
+        if (! function_exists('exif_read_data')) {
+            return $source;
+        }
+
+        $exif = @exif_read_data($path);
+        $orientation = $exif['Orientation'] ?? 1;
+
+        $rotated = match ($orientation) {
+            3 => imagerotate($source, 180, 0),
+            6 => imagerotate($source, -90, 0),
+            8 => imagerotate($source, 90, 0),
+            default => $source,
+        };
+
+        if ($rotated === false) {
+            return $source;
+        }
+
+        if ($rotated !== $source) {
+            imagedestroy($source);
+        }
+
+        return $rotated;
     }
 }

@@ -110,6 +110,44 @@ class StepEntryTest extends TestCase
         $this->assertLessThanOrEqual(1600, max($width, $height));
     }
 
+    public function test_uploaded_evidence_images_are_rotated_upright_using_exif_orientation(): void
+    {
+        Storage::fake('public');
+        $user = $this->userWithCompletedJourney();
+
+        // A 100x50 (wide) JPEG tagged with EXIF orientation 6 needs a 90deg
+        // rotation to display upright, so the output should come out 50x100.
+        $canvas = imagecreatetruecolor(100, 50);
+        ob_start();
+        imagejpeg($canvas);
+        $baseJpeg = ob_get_clean();
+        imagedestroy($canvas);
+
+        $tiff = 'II'.pack('v', 42).pack('V', 8)
+            .pack('v', 1)
+            .pack('v', 0x0112).pack('v', 3).pack('V', 1).pack('v', 6).pack('v', 0)
+            .pack('V', 0);
+        $exifHeader = "Exif\x00\x00".$tiff;
+        $app1 = "\xFF\xE1".pack('n', strlen($exifHeader) + 2).$exifHeader;
+        $withExif = substr($baseJpeg, 0, 2).$app1.substr($baseJpeg, 2);
+
+        $tmpPath = tempnam(sys_get_temp_dir(), 'exif').'.jpg';
+        file_put_contents($tmpPath, $withExif);
+
+        $this->actingAs($user)->post('/steps', [
+            'steps' => 5000,
+            'evidence' => new UploadedFile($tmpPath, 'evidence.jpg', 'image/jpeg', null, true),
+        ]);
+
+        $entry = StepEntry::where('user_id', $user->id)->first();
+        [$width, $height] = getimagesize(Storage::disk('public')->path($entry->evidence_path));
+
+        $this->assertSame(50, $width);
+        $this->assertSame(100, $height);
+
+        @unlink($tmpPath);
+    }
+
     public function test_pdf_evidence_is_stored_without_compression(): void
     {
         Storage::fake('public');
