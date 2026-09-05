@@ -56,6 +56,16 @@ class StepEntriesTable
                     ->relationship('user', 'name')
                     ->searchable()
                     ->preload(),
+                SelectFilter::make('country')
+                    ->label('Country')
+                    ->options(Countries::all())
+                    ->query(fn (Builder $query, array $data): Builder => $query->when(
+                        $data['value'] ?? null,
+                        fn (Builder $q, string $country) => $q->whereHas(
+                            'user.formSubmission',
+                            fn (Builder $q2) => $q2->where('steps->1->country', $country),
+                        ),
+                    )),
                 Filter::make('date')
                     ->schema([
                         DatePicker::make('from'),

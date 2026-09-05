@@ -22,7 +22,11 @@ class StepEntryResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedChartBar;
 
-    protected static ?string $navigationLabel = 'Step entries';
+    protected static ?string $navigationLabel = 'All Submissions';
+
+    protected static ?string $modelLabel = 'submission';
+
+    protected static ?string $pluralModelLabel = 'All Submissions';
 
     public static function form(Schema $schema): Schema
     {
