@@ -113,7 +113,7 @@ export default function StepsIndex({ today, week, month, year, streakDays, unloc
             <div className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
                 <h1 className="text-2xl font-semibold tracking-tight">Log your steps</h1>
                 <p className="text-muted-foreground mt-1 text-sm">
-                    Enter today&apos;s step count and upload a photo of your phone or tracker as evidence.
+                    Enter today&apos;s step count and upload a photoas evidence.
                 </p>
 
                 <div className="mt-6 grid gap-4 sm:gap-5 lg:grid-cols-[minmax(0,1fr)_440px]">
@@ -146,9 +146,8 @@ export default function StepsIndex({ today, week, month, year, streakDays, unloc
                                                     role="tab"
                                                     aria-selected={period === label}
                                                     onClick={() => setPeriod(label)}
-                                                    className={`relative z-10 rounded-md px-2.5 py-1.5 text-center text-[13px] font-medium whitespace-nowrap transition-colors duration-300 ${
-                                                        period === label ? 'text-white' : 'text-muted-foreground hover:text-foreground'
-                                                    }`}
+                                                    className={`relative z-10 rounded-md px-2.5 py-1.5 text-center text-[13px] font-medium whitespace-nowrap transition-colors duration-300 ${period === label ? 'text-white' : 'text-muted-foreground hover:text-foreground'
+                                                        }`}
                                                 >
                                                     {label}
                                                 </button>
