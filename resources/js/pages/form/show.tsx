@@ -1,13 +1,11 @@
+import AppLogo from '@/components/app-logo';
 import FormStepField from '@/components/form-step-field';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import AppLayout from '@/layouts/app-layout';
-import { type BreadcrumbItem, type FormStepDefinition, type FormStepValues } from '@/types';
+import { type FormStepDefinition, type FormStepValues } from '@/types';
 import { Head, Link, router } from '@inertiajs/react';
-import { Briefcase, CalendarHeart, Check, LoaderCircle, Ruler, type LucideIcon } from 'lucide-react';
+import { Briefcase, CalendarHeart, Check, LoaderCircle, LogOut, Ruler, type LucideIcon } from 'lucide-react';
 import { FormEventHandler, useEffect, useState } from 'react';
-
-const breadcrumbs: BreadcrumbItem[] = [{ title: 'My journey', href: '/form' }];
 
 const STEP_ICONS: Record<string, LucideIcon> = {
     CalendarHeart,
@@ -45,8 +43,23 @@ export default function FormShow({
     const StepIcon = STEP_ICONS[step.icon] ?? CalendarHeart;
 
     return (
-        <AppLayout breadcrumbs={breadcrumbs}>
+        <div className="bg-background min-h-svh">
             <Head title={step.name} />
+
+            <header className="flex h-16 items-center justify-between border-b px-4 sm:px-6">
+                <div className="flex items-center">
+                    <AppLogo />
+                </div>
+                <Link
+                    method="post"
+                    href={route('logout')}
+                    as="button"
+                    className="text-muted-foreground hover:text-foreground flex items-center gap-1.5 text-sm font-medium"
+                >
+                    <LogOut className="h-4 w-4" aria-hidden="true" />
+                    Log out
+                </Link>
+            </header>
 
             <div className="mx-auto w-full max-w-2xl px-4 py-8">
                 <div className="animate-fade-slide-up text-center">
@@ -128,6 +141,6 @@ export default function FormShow({
                     </CardContent>
                 </Card>
             </div>
-        </AppLayout>
+        </div>
     );
 }
