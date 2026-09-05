@@ -2,6 +2,9 @@
 
 namespace App\Filament\Resources\StepEntries\Tables;
 
+use App\Models\StepEntry;
+use App\Support\Countries;
+use App\Support\CountryFlags;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
@@ -20,6 +23,7 @@ class StepEntriesTable
     {
         return $table
             ->defaultSort('date', 'desc')
+            ->modifyQueryUsing(fn (Builder $query) => $query->with('user.formSubmission'))
             ->columns([
                 ImageColumn::make('evidence_path')
                     ->label('Evidence')
@@ -27,6 +31,12 @@ class StepEntriesTable
                     ->square(),
                 TextColumn::make('user.name')
                     ->searchable(),
+                ImageColumn::make('country')
+                    ->label('Country')
+                    ->state(fn (StepEntry $record) => CountryFlags::dataUri($record->user?->formSubmission?->steps[1]['country'] ?? null))
+                    ->alt(fn (StepEntry $record) => Countries::all()[$record->user?->formSubmission?->steps[1]['country'] ?? ''] ?? 'Unknown')
+                    ->size(28)
+                    ->placeholder('—'),
                 TextColumn::make('date')
                     ->date()
                     ->sortable(),

@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Users\Schemas;
 
 use App\Models\User;
+use App\Support\CountryFlags;
 use App\Support\FormSteps;
 use App\Support\StepStats;
 use Filament\Infolists\Components\IconEntry;
@@ -58,12 +59,22 @@ class UserInfolist
                         ->columns(2)
                         ->components(
                             collect($step['fields'])
-                                ->map(fn (array $field) => TextEntry::make("journey.{$step['number']}.{$field['name']}")
-                                    ->label($field['label'])
-                                    ->state(fn (User $record) => FormSteps::formatValue(
+                                ->map(function (array $field) use ($step) {
+                                    $entry = TextEntry::make("journey.{$step['number']}.{$field['name']}")
+                                        ->label($field['label']);
+
+                                    if ($field['name'] === 'country') {
+                                        return $entry->html()->state(fn (User $record) => CountryFlags::labelHtml(
+                                            $record->formSubmission?->steps[$step['number']][$field['name']] ?? null,
+                                            FormSteps::formatValue($field, $record->formSubmission?->steps[$step['number']] ?? []),
+                                        ));
+                                    }
+
+                                    return $entry->state(fn (User $record) => FormSteps::formatValue(
                                         $field,
                                         $record->formSubmission?->steps[$step['number']] ?? [],
-                                    )))
+                                    ));
+                                })
                                 ->all(),
                         ),
                 )->all(),

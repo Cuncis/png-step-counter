@@ -2,29 +2,36 @@
 
 namespace App\Filament\Resources\Users\Tables;
 
+use App\Models\User;
+use App\Support\Countries;
+use App\Support\CountryFlags;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
-use Filament\Tables\Columns\IconColumn;
+use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 
 class UsersTable
 {
     public static function configure(Table $table): Table
     {
         return $table
+            ->modifyQueryUsing(fn (Builder $query) => $query->with('formSubmission'))
             ->columns([
                 TextColumn::make('name')
                     ->searchable(),
                 TextColumn::make('email')
                     ->label('Email address')
                     ->searchable(),
-                IconColumn::make('formSubmission.is_complete')
-                    ->label('Journey complete')
-                    ->boolean(),
+                ImageColumn::make('country')
+                    ->label('Country')
+                    ->state(fn (User $record) => CountryFlags::dataUri($record->formSubmission?->steps[1]['country'] ?? null))
+                    ->alt(fn (User $record) => Countries::all()[$record->formSubmission?->steps[1]['country'] ?? ''] ?? 'Unknown')
+                    ->size(28)
+                    ->placeholder('—'),
                 TextColumn::make('step_entries_sum_steps')
                     ->label('Total steps')
                     ->numeric()
@@ -39,14 +46,6 @@ class UsersTable
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
-            ])
-            ->filters([
-                TernaryFilter::make('journey_complete')
-                    ->label('Journey complete')
-                    ->queries(
-                        true: fn ($query) => $query->whereHas('formSubmission', fn ($q) => $q->where('is_complete', true)),
-                        false: fn ($query) => $query->whereDoesntHave('formSubmission', fn ($q) => $q->where('is_complete', true)),
-                    ),
             ])
             ->recordActions([
                 ViewAction::make(),
