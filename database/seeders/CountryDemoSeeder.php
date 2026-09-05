@@ -38,44 +38,45 @@ class CountryDemoSeeder extends Seeder
             'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=',
         );
 
-        foreach (['MY', 'PH', 'ID'] as $country) {
-            User::factory()
-                ->count(self::USERS_PER_COUNTRY)
-                ->create()
-                ->each(function (User $user) use ($country, $placeholder) {
-                    FormSubmission::factory()->create([
-                        'user_id' => $user->id,
-                        'current_step' => 3,
-                        'is_complete' => true,
-                        'steps' => [
-                            1 => [
-                                'date_of_birth' => fake()->dateTimeBetween('-55 years', '-18 years')->format('Y-m-d'),
-                                'gender' => fake()->randomElement(self::GENDERS),
-                                'country' => $country,
-                            ],
-                            2 => [
-                                'height_cm' => (string) fake()->numberBetween(150, 190),
-                                'weight_kg' => (string) fake()->numberBetween(45, 100),
-                            ],
-                            3 => [
-                                'occupation' => fake()->randomElement(self::OCCUPATIONS),
-                                'activity_level' => fake()->randomElement(self::ACTIVITY_LEVELS),
-                            ],
-                        ],
-                    ]);
+        $countryAssignments = collect(['MY', 'PH', 'ID'])
+            ->flatMap(fn (string $country) => array_fill(0, self::USERS_PER_COUNTRY, $country))
+            ->shuffle();
 
-                    collect(range(0, self::DAYS_OF_HISTORY - 1))->each(function (int $offset) use ($user, $placeholder) {
-                        $path = "step-evidence/{$user->id}/".Str::random(30).'.png';
-                        Storage::disk('public')->put($path, $placeholder);
+        $countryAssignments->each(function (string $country) use ($placeholder) {
+            $user = User::factory()->create();
 
-                        StepEntry::factory()->create([
-                            'user_id' => $user->id,
-                            'date' => today()->subDays($offset),
-                            'steps' => fake()->numberBetween(3000, 16000),
-                            'evidence_path' => $path,
-                        ]);
-                    });
-                });
-        }
+            FormSubmission::factory()->create([
+                'user_id' => $user->id,
+                'current_step' => 3,
+                'is_complete' => true,
+                'steps' => [
+                    1 => [
+                        'date_of_birth' => fake()->dateTimeBetween('-55 years', '-18 years')->format('Y-m-d'),
+                        'gender' => fake()->randomElement(self::GENDERS),
+                        'country' => $country,
+                    ],
+                    2 => [
+                        'height_cm' => (string) fake()->numberBetween(150, 190),
+                        'weight_kg' => (string) fake()->numberBetween(45, 100),
+                    ],
+                    3 => [
+                        'occupation' => fake()->randomElement(self::OCCUPATIONS),
+                        'activity_level' => fake()->randomElement(self::ACTIVITY_LEVELS),
+                    ],
+                ],
+            ]);
+
+            collect(range(0, self::DAYS_OF_HISTORY - 1))->each(function (int $offset) use ($user, $placeholder) {
+                $path = "step-evidence/{$user->id}/".Str::random(30).'.png';
+                Storage::disk('public')->put($path, $placeholder);
+
+                StepEntry::factory()->create([
+                    'user_id' => $user->id,
+                    'date' => today()->subDays($offset),
+                    'steps' => fake()->numberBetween(3000, 16000),
+                    'evidence_path' => $path,
+                ]);
+            });
+        });
     }
 }
