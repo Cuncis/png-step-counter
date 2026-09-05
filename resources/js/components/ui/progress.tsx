@@ -4,9 +4,10 @@ import { cn } from '@/lib/utils';
 
 interface ProgressProps extends React.HTMLAttributes<HTMLDivElement> {
     value?: number;
+    indicatorClassName?: string;
 }
 
-const Progress = React.forwardRef<HTMLDivElement, ProgressProps>(({ className, value = 0, ...props }, ref) => {
+const Progress = React.forwardRef<HTMLDivElement, ProgressProps>(({ className, value = 0, indicatorClassName, ...props }, ref) => {
     const clamped = Math.min(100, Math.max(0, value));
 
     return (
@@ -19,7 +20,10 @@ const Progress = React.forwardRef<HTMLDivElement, ProgressProps>(({ className, v
             className={cn('relative h-2 w-full overflow-hidden rounded-full bg-secondary', className)}
             {...props}
         >
-            <div className="h-full flex-1 rounded-full bg-primary transition-all duration-300" style={{ width: `${clamped}%` }} />
+            <div
+                className={cn('h-full flex-1 rounded-full bg-primary transition-all duration-300', indicatorClassName)}
+                style={{ width: `${clamped}%` }}
+            />
         </div>
     );
 });

@@ -21,13 +21,13 @@ class ExampleTest extends TestCase
         $response->assertStatus(200);
     }
 
-    public function test_authenticated_users_are_redirected_from_home_to_steps(): void
+    public function test_authenticated_users_can_view_the_homepage(): void
     {
         $user = User::factory()->create();
         FormSubmission::factory()->create(['user_id' => $user->id, 'is_complete' => true]);
 
         $this->actingAs($user)
             ->get('/')
-            ->assertRedirect(route('steps.index', absolute: false));
+            ->assertStatus(200);
     }
 }

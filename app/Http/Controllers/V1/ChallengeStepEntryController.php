@@ -19,8 +19,6 @@ class ChallengeStepEntryController extends Controller
         $country = ChallengeCountry::findOrFail($data['challenge_country_id']);
         $steps = number_format($data['steps']);
 
-        return redirect()
-            ->route('v1.dashboard')
-            ->with('success', "Great job! Your {$steps} steps have been added for {$country->flag_emoji} {$country->name}.");
+        return back()->with('success', "Great job! Your {$steps} steps have been added for {$country->flag_emoji} {$country->name}.");
     }
 }
