@@ -45,7 +45,7 @@ class FormFlowTest extends TestCase
 
         $response = $this->actingAs($user)->post('/form/1', [
             'date_of_birth' => '1990-01-01',
-            'gender' => 'prefer_not_to_say',
+            'gender' => 'female',
             'country' => 'ID',
         ]);
 

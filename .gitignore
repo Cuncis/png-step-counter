@@ -4,6 +4,7 @@
 .env.backup
 .env.production
 /DEPLOY-VPS.md
+/deploy.sh
 .phpactor.json
 .phpunit.result.cache
 /.codex

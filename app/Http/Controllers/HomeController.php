@@ -23,6 +23,7 @@ class HomeController extends Controller
             'countries' => RegionalChallenge::rankedCountries($countries),
             'activity' => RegionalChallenge::paginatedActivity($request),
             'authCountry' => $this->authCountry($request),
+            'authGender' => $request->user()?->formSubmission?->steps[1]['gender'] ?? null,
             'personal' => $request->user() ? $this->personalStats($request) : null,
         ]);
     }

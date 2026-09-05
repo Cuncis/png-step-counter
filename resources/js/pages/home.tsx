@@ -5,6 +5,7 @@ import AchievementUnlockedDialog from '@/components/step-counter/achievement-unl
 import AchievementsPanel, { ACHIEVEMENTS } from '@/components/step-counter/achievements-panel';
 import StepGauge from '@/components/step-counter/gauge';
 import StreakCard from '@/components/step-counter/streak-card';
+import WalkingAnimation from '@/components/step-counter/walking-animation';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
@@ -61,6 +62,7 @@ interface HomeProps {
         total: number;
     };
     authCountry: { code: string; name: string } | null;
+    authGender: string | null;
     personal: {
         periods: Record<'day' | 'week' | 'month' | 'year', { value: number; goal: number }>;
         streakDays: number;
@@ -415,11 +417,13 @@ function MyStepsPanel({
     personal,
     name,
     country,
+    gender,
     onViewAchievements,
 }: {
     personal: NonNullable<HomeProps['personal']>;
     name: string;
     country: { code: string; name: string } | null;
+    gender: string | null;
     onViewAchievements: () => void;
 }) {
     const [period, setPeriod] = useState<PeriodTab>('Day');
@@ -477,6 +481,8 @@ function MyStepsPanel({
                         )}
                     </div>
 
+                    <WalkingAnimation gender={gender} />
+
                     <StreakCard streakDays={personal.streakDays} bare />
 
                     <div className="grid grid-cols-2 gap-2 border-t border-gray-100 pt-4 text-center">
@@ -521,11 +527,13 @@ function HomeTabs({
     countries,
     activity,
     authCountry,
+    authGender,
 }: {
     personal: HomeProps['personal'];
     countries: ChallengeCountrySummary[];
     activity: HomeProps['activity'];
     authCountry: HomeProps['authCountry'];
+    authGender: HomeProps['authGender'];
 }) {
     const { auth } = usePage<SharedData>().props;
     const [tab, setTab] = useState<HomeTab>('My Steps');
@@ -561,6 +569,7 @@ function HomeTabs({
                             personal={personal}
                             name={auth.user?.name ?? ''}
                             country={authCountry}
+                            gender={authGender}
                             onViewAchievements={() => setTab('Achievements')}
                         />
                     ) : (
@@ -789,7 +798,7 @@ function LogStepsDialog({
     );
 }
 
-export default function Home({ regional, countries, activity, authCountry, personal }: HomeProps) {
+export default function Home({ regional, countries, activity, authCountry, authGender, personal }: HomeProps) {
     const { auth, flash } = usePage<SharedData>().props;
     const [dialogOpen, setDialogOpen] = useState(false);
 
@@ -804,7 +813,7 @@ export default function Home({ regional, countries, activity, authCountry, perso
 
                 <CountryCards countries={countries} />
 
-                <HomeTabs personal={personal} countries={countries} activity={activity} authCountry={authCountry} />
+                <HomeTabs personal={personal} countries={countries} activity={activity} authCountry={authCountry} authGender={authGender} />
 
                 <section className="rounded-2xl bg-[#215AA8] px-6 py-10 text-center text-white">
                     <p className="text-lg font-bold">3 Countries. 1 Challenge. 10 Million Steps.</p>
