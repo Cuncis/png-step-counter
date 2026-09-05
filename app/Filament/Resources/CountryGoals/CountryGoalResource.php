@@ -4,12 +4,14 @@ namespace App\Filament\Resources\CountryGoals;
 
 use App\Filament\Resources\CountryGoals\Pages\ManageCountryGoals;
 use App\Models\CountryGoal;
+use App\Support\CountryFlags;
 use BackedEnum;
 use Filament\Actions\EditAction;
 use Filament\Forms\Components\TextInput;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
+use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 
@@ -37,9 +39,14 @@ class CountryGoalResource extends Resource
     {
         return $table
             ->columns([
+                ImageColumn::make('flag')
+                    ->label('Flag')
+                    ->state(fn (CountryGoal $record) => CountryFlags::dataUri($record->code))
+                    ->alt(fn (CountryGoal $record) => $record->name)
+                    ->imageHeight(20)
+                    ->imageWidth(30),
                 TextColumn::make('name')
                     ->label('Country'),
-                TextColumn::make('code'),
                 TextColumn::make('goal_steps')
                     ->label('Target goal (steps)')
                     ->numeric()

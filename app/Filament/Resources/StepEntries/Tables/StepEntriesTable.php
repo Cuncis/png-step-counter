@@ -35,7 +35,8 @@ class StepEntriesTable
                     ->label('Country')
                     ->state(fn (StepEntry $record) => CountryFlags::dataUri($record->user?->formSubmission?->steps[1]['country'] ?? null))
                     ->alt(fn (StepEntry $record) => Countries::all()[$record->user?->formSubmission?->steps[1]['country'] ?? ''] ?? 'Unknown')
-                    ->size(28)
+                    ->imageHeight(20)
+                    ->imageWidth(30)
                     ->placeholder('—'),
                 TextColumn::make('date')
                     ->date()

@@ -30,7 +30,8 @@ class UsersTable
                     ->label('Country')
                     ->state(fn (User $record) => CountryFlags::dataUri($record->formSubmission?->steps[1]['country'] ?? null))
                     ->alt(fn (User $record) => Countries::all()[$record->formSubmission?->steps[1]['country'] ?? ''] ?? 'Unknown')
-                    ->size(28)
+                    ->imageHeight(20)
+                    ->imageWidth(30)
                     ->placeholder('—'),
                 TextColumn::make('step_entries_sum_steps')
                     ->label('Total steps')
