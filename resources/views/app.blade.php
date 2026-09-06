@@ -6,6 +6,9 @@
 
         <title inertia>{{ config('app.name', 'Laravel') }}</title>
 
+        <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+        <link rel="alternate icon" href="/favicon.ico">
+
         <link rel="preload" href="/fonts/GaryMCH-Book.otf" as="font" type="font/otf" crossorigin>
         <link rel="preload" href="/fonts/GaryMCH-Semibold.otf" as="font" type="font/otf" crossorigin>
 
