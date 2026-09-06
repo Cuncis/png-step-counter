@@ -57,6 +57,33 @@ class AuthenticationTest extends TestCase
         $response->assertRedirect(route('home', absolute: false));
     }
 
+    public function test_admins_are_sent_to_the_admin_panel_on_login_instead_of_the_journey()
+    {
+        $user = User::factory()->create(['is_admin' => true]);
+
+        $response = $this->post('/login', [
+            'email' => $user->email,
+            'password' => 'password',
+        ]);
+
+        $this->assertAuthenticated();
+        $response->assertRedirect('/admin');
+    }
+
+    public function test_admins_get_a_hard_redirect_to_the_admin_panel_on_inertia_login_requests()
+    {
+        $user = User::factory()->create(['is_admin' => true]);
+
+        $response = $this->withHeader('X-Inertia', 'true')->post('/login', [
+            'email' => $user->email,
+            'password' => 'password',
+        ]);
+
+        $this->assertAuthenticated();
+        $response->assertStatus(409);
+        $response->assertHeader('X-Inertia-Location', url('/admin'));
+    }
+
     public function test_users_can_not_authenticate_with_invalid_password()
     {
         $user = User::factory()->create();

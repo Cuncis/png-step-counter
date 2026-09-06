@@ -4,14 +4,15 @@ use App\Http\Controllers\FormController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\StepEntryController;
 use App\Http\Middleware\EnsureJourneyIsComplete;
+use App\Http\Middleware\RedirectAdminsFromApp;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
-Route::get('/', [HomeController::class, 'index'])->name('home');
+Route::get('/', [HomeController::class, 'index'])->middleware(RedirectAdminsFromApp::class)->name('home');
 
 Route::get('v2', fn () => Inertia::render('welcome'))->name('v2');
 
-Route::middleware(['auth'])->group(function () {
+Route::middleware(['auth', RedirectAdminsFromApp::class])->group(function () {
     Route::get('form', [FormController::class, 'index'])->name('form.index');
     Route::get('form/{step}', [FormController::class, 'show'])->whereNumber('step')->name('form.show');
     Route::post('form/{step}', [FormController::class, 'update'])->whereNumber('step')->name('form.update');
