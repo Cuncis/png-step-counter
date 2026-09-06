@@ -29,7 +29,7 @@ import {
 } from '@/types/home';
 import { Head, Link, router, useForm, usePage } from '@inertiajs/react';
 import { ArrowDown, ArrowUp, CheckCircle2, Crown, Flame, Footprints, Globe, LoaderCircle, MapPin, Medal, PartyPopper, Plus, X } from 'lucide-react';
-import { FormEventHandler, useRef, useState } from 'react';
+import { FormEventHandler, useEffect, useRef, useState } from 'react';
 
 const RANK_BADGES: Record<number, { icon: typeof Crown; color: string }> = {
     1: { icon: Crown, color: '#D4AF37' },
@@ -568,6 +568,43 @@ function HomeTabs({
 }) {
     const { auth } = usePage<SharedData>().props;
     const [tab, setTab] = useState<HomeTab>('My Steps');
+    const [seenAchievements, setSeenAchievements] = useState<string[]>([]);
+    const userId = auth.user?.id;
+
+    useEffect(() => {
+        if (!userId) {
+            return;
+        }
+
+        try {
+            const raw = localStorage.getItem(`seen-achievements:${userId}`);
+            setSeenAchievements(raw ? (JSON.parse(raw) as string[]) : []);
+        } catch {
+            setSeenAchievements([]);
+        }
+    }, [userId]);
+
+    function markAchievementSeen(key: string) {
+        setSeenAchievements((previous) => {
+            if (previous.includes(key)) {
+                return previous;
+            }
+
+            const next = [...previous, key];
+
+            if (userId) {
+                try {
+                    localStorage.setItem(`seen-achievements:${userId}`, JSON.stringify(next));
+                } catch {
+                    // Private browsing or a full storage quota; the badge just won't persist across visits.
+                }
+            }
+
+            return next;
+        });
+    }
+
+    const newAchievementKeys = (personal?.unlockedAchievements ?? []).filter((key) => !seenAchievements.includes(key));
 
     return (
         <section>
@@ -581,13 +618,18 @@ function HomeTabs({
                             aria-selected={tab === label}
                             onClick={() => setTab(label)}
                             className={cn(
-                                'border-b-2 px-1 py-3 text-sm font-semibold whitespace-nowrap transition-colors',
+                                'flex items-center gap-1.5 border-b-2 px-1 py-3 text-sm font-semibold whitespace-nowrap transition-colors',
                                 tab === label
                                     ? 'border-[#215AA8] text-[#215AA8]'
                                     : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700',
                             )}
                         >
                             {label}
+                            {label === 'Achievements' && newAchievementKeys.length > 0 && (
+                                <span className="rounded-full bg-[#EF5323]/10 px-1.5 py-0.5 text-[10px] font-bold tracking-wide text-[#EF5323] uppercase">
+                                    New
+                                </span>
+                            )}
                         </button>
                     ))}
                 </nav>
@@ -621,7 +663,9 @@ function HomeTabs({
                     />
                 )}
 
-                {tab === 'Achievements' && <AchievementsPanel unlocked={personal?.unlockedAchievements ?? []} />}
+                {tab === 'Achievements' && (
+                    <AchievementsPanel unlocked={personal?.unlockedAchievements ?? []} newKeys={newAchievementKeys} onView={markAchievementSeen} />
+                )}
 
                 {tab === 'Country Leaderboard' && <Leaderboard countries={countries} />}
             </div>
