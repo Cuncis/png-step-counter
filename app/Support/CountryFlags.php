@@ -25,6 +25,16 @@ class CountryFlags
         return $svg ? 'data:image/svg+xml;base64,'.base64_encode($svg) : null;
     }
 
+    public static function emoji(?string $code): string
+    {
+        return match ($code) {
+            'ID' => '🇮🇩',
+            'MY' => '🇲🇾',
+            'PH' => '🇵🇭',
+            default => '',
+        };
+    }
+
     /**
      * A flag image followed by a text label, as an HTML string for contexts
      * that render labels unescaped (e.g. Filament stats and infolist entries).

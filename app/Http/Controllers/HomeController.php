@@ -4,7 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\StepEntry;
 use App\Support\Countries;
-use App\Support\RegionalChallenge;
+use App\Support\CountryStandings;
+use App\Support\StepConversions;
 use App\Support\StepStats;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -16,12 +17,10 @@ class HomeController extends Controller
 
     public function index(Request $request): Response
     {
-        $countries = RegionalChallenge::countriesWithTotals();
-
         return Inertia::render('home', [
-            'regional' => RegionalChallenge::regionalSummary($countries),
-            'countries' => RegionalChallenge::rankedCountries($countries),
-            'activity' => RegionalChallenge::paginatedActivity($request),
+            'regional' => CountryStandings::regionalSummary(),
+            'countries' => CountryStandings::rankedCountries(),
+            'activity' => CountryStandings::paginatedActivity($request),
             'authCountry' => $this->authCountry($request),
             'authGender' => $request->user()?->formSubmission?->steps[1]['gender'] ?? null,
             'personal' => $request->user() ? $this->personalStats($request) : null,
@@ -43,7 +42,7 @@ class HomeController extends Controller
     }
 
     /**
-     * @return array{periods: array<string, array{value: int, goal: int}>, streakDays: int, lifetimeSteps: int, unlockedAchievements: list<string>}
+     * @return array{periods: array<string, array{value: int, goal: int, distance_km: float, calories: int}>, streakDays: int, lifetimeSteps: int, unlockedAchievements: list<string>}
      */
     private function personalStats(Request $request): array
     {
@@ -51,21 +50,31 @@ class HomeController extends Controller
         $today = today();
         $todayEntry = $entries->first(fn (StepEntry $entry) => $entry->date->isSameDay($today));
 
+        $bodyBasics = $request->user()->formSubmission?->steps[2] ?? [];
+        $heightCm = isset($bodyBasics['height_cm']) ? (float) $bodyBasics['height_cm'] : null;
+        $weightKg = isset($bodyBasics['weight_kg']) ? (float) $bodyBasics['weight_kg'] : null;
+
+        $period = fn (int $value, int $goal) => [
+            'value' => $value,
+            'goal' => $goal,
+            ...StepConversions::estimate($value, $heightCm, $weightKg),
+        ];
+
         return [
             'periods' => [
-                'day' => ['value' => $todayEntry->steps ?? 0, 'goal' => self::DAILY_GOAL],
-                'week' => [
-                    'value' => (int) $entries->filter(fn (StepEntry $entry) => $entry->date->isSameWeek($today))->sum('steps'),
-                    'goal' => self::DAILY_GOAL * 7,
-                ],
-                'month' => [
-                    'value' => (int) $entries->filter(fn (StepEntry $entry) => $entry->date->isSameMonth($today))->sum('steps'),
-                    'goal' => self::DAILY_GOAL * $today->daysInMonth,
-                ],
-                'year' => [
-                    'value' => (int) $entries->filter(fn (StepEntry $entry) => $entry->date->isSameYear($today))->sum('steps'),
-                    'goal' => self::DAILY_GOAL * ($today->isLeapYear() ? 366 : 365),
-                ],
+                'day' => $period($todayEntry->steps ?? 0, self::DAILY_GOAL),
+                'week' => $period(
+                    (int) $entries->filter(fn (StepEntry $entry) => $entry->date->isSameWeek($today))->sum('steps'),
+                    self::DAILY_GOAL * 7,
+                ),
+                'month' => $period(
+                    (int) $entries->filter(fn (StepEntry $entry) => $entry->date->isSameMonth($today))->sum('steps'),
+                    self::DAILY_GOAL * $today->daysInMonth,
+                ),
+                'year' => $period(
+                    (int) $entries->filter(fn (StepEntry $entry) => $entry->date->isSameYear($today))->sum('steps'),
+                    self::DAILY_GOAL * ($today->isLeapYear() ? 366 : 365),
+                ),
             ],
             'streakDays' => StepStats::currentStreak($entries),
             'lifetimeSteps' => (int) $entries->sum('steps'),

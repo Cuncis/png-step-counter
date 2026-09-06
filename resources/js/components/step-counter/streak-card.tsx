@@ -1,15 +1,12 @@
 import { Card, CardContent } from '@/components/ui/card';
 import { Link } from '@inertiajs/react';
-import { Flame, Play } from 'lucide-react';
+import { Play } from 'lucide-react';
 
 export default function StreakCard({ streakDays = 0, ctaHref, bare = false }: { streakDays?: number; ctaHref?: string; bare?: boolean }) {
     const hasStreak = streakDays > 0;
 
     const content = (
         <div className="flex flex-col items-stretch gap-3 sm:flex-row sm:items-center">
-            <span className="flex h-10 w-10 flex-none items-center justify-center rounded-full bg-[#EF5323]/10 text-[#EF5323]">
-                <Flame className="h-5 w-5" aria-hidden="true" />
-            </span>
             <span className="flex min-w-0 flex-1 flex-col">
                 <b className="text-[14px] font-bold">{hasStreak ? `${streakDays}-day streak` : 'No streak yet'}</b>
                 <small className="text-muted-foreground text-[12px]">

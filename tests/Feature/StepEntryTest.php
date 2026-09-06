@@ -181,6 +181,37 @@ class StepEntryTest extends TestCase
         );
     }
 
+    public function test_distance_and_calories_use_default_body_metrics_when_the_journey_lacks_them(): void
+    {
+        $user = $this->userWithCompletedJourney();
+        StepEntry::factory()->for($user)->create(['date' => today(), 'steps' => 5000]);
+
+        $response = $this->actingAs($user)->get('/');
+
+        $response->assertInertia(fn ($page) => $page
+            ->where('personal.periods.day.distance_km', 3.5)
+            ->where('personal.periods.day.calories', 163)
+        );
+    }
+
+    public function test_distance_and_calories_are_personalized_from_the_journeys_body_basics(): void
+    {
+        $user = User::factory()->create();
+        FormSubmission::factory()->create([
+            'user_id' => $user->id,
+            'is_complete' => true,
+            'steps' => [2 => ['height_cm' => '190', 'weight_kg' => '90']],
+        ]);
+        StepEntry::factory()->for($user)->create(['date' => today(), 'steps' => 5000]);
+
+        $response = $this->actingAs($user)->get('/');
+
+        $response->assertInertia(fn ($page) => $page
+            ->where('personal.periods.day.distance_km', 3.9)
+            ->where('personal.periods.day.calories', 225)
+        );
+    }
+
     public function test_guests_see_no_personal_stats_on_the_homepage(): void
     {
         $response = $this->get('/');

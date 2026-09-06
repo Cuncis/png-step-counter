@@ -21,14 +21,14 @@ import { useInitials } from '@/hooks/use-initials';
 import { cn } from '@/lib/utils';
 import { type SharedData } from '@/types';
 import {
-    type ChallengeActivityEntry,
-    type ChallengeCountrySummary,
-    type ChallengeRegionalSummary,
-    type ChallengeSortDirection,
-    type ChallengeSortField,
-} from '@/types/challenge';
+    type ActivitySortDirection,
+    type ActivitySortField,
+    type CountryActivityEntry,
+    type CountryStanding,
+    type RegionalStandingSummary,
+} from '@/types/home';
 import { Head, Link, router, useForm, usePage } from '@inertiajs/react';
-import { ArrowDown, ArrowUp, CheckCircle2, Crown, Footprints, Globe, LoaderCircle, Medal, PartyPopper, Plus, X } from 'lucide-react';
+import { ArrowDown, ArrowUp, CheckCircle2, Crown, Flame, Footprints, Globe, LoaderCircle, MapPin, Medal, PartyPopper, Plus, X } from 'lucide-react';
 import { FormEventHandler, useRef, useState } from 'react';
 
 const RANK_BADGES: Record<number, { icon: typeof Crown; color: string }> = {
@@ -49,12 +49,12 @@ function RankBadge({ rank }: { rank: number }) {
 }
 
 interface HomeProps {
-    regional: ChallengeRegionalSummary;
-    countries: ChallengeCountrySummary[];
+    regional: RegionalStandingSummary;
+    countries: CountryStanding[];
     activity: {
-        entries: ChallengeActivityEntry[];
-        sort: ChallengeSortField;
-        direction: ChallengeSortDirection;
+        entries: CountryActivityEntry[];
+        sort: ActivitySortField;
+        direction: ActivitySortDirection;
         country: string | null;
         date: string | null;
         current_page: number;
@@ -64,7 +64,7 @@ interface HomeProps {
     authCountry: { code: string; name: string } | null;
     authGender: string | null;
     personal: {
-        periods: Record<'day' | 'week' | 'month' | 'year', { value: number; goal: number }>;
+        periods: Record<'day' | 'week' | 'month' | 'year', { value: number; goal: number; distance_km: number; calories: number }>;
         streakDays: number;
         lifetimeSteps: number;
         unlockedAchievements: string[];
@@ -87,18 +87,18 @@ function formatDateTime(date: Date): string {
     });
 }
 
-function Hero({ regional }: { regional: ChallengeRegionalSummary }) {
+function Hero({ regional }: { regional: RegionalStandingSummary }) {
     if (regional.is_complete) {
         return (
             <section className="rounded-2xl bg-[#215AA8] px-6 py-12 text-center text-white shadow-sm sm:px-10 sm:py-16">
                 <p className="animate-fade-slide-up flex items-center justify-center gap-1.5 text-sm font-semibold tracking-wide uppercase opacity-90">
-                    <Footprints className="h-4 w-4" aria-hidden="true" /> 10 Million Steps
+                    <Footprints className="h-4 w-4" aria-hidden="true" /> {regional.goal_steps.toLocaleString()} Steps
                 </p>
                 <h1 className="animate-fade-slide-up mt-3 flex items-center justify-center gap-2 text-4xl font-extrabold tracking-tight sm:text-5xl">
                     <PartyPopper className="h-8 w-8 sm:h-10 sm:w-10" aria-hidden="true" /> WE DID IT!
                 </h1>
                 <p className="mx-auto mt-4 max-w-2xl text-lg text-white/90">
-                    Together, Malaysia, Philippines and Indonesia have reached 10,000,000 steps!
+                    Together, Malaysia, Philippines and Indonesia have reached {regional.goal_steps.toLocaleString()} steps!
                 </p>
                 <p className="mt-6 text-3xl font-bold tabular-nums">{regional.total_steps.toLocaleString()} steps</p>
             </section>
@@ -123,7 +123,7 @@ function Hero({ regional }: { regional: ChallengeRegionalSummary }) {
                 </div>
             </div>
 
-            <div className="mx-auto mt-8 grid max-w-2xl grid-cols-1 gap-4 border-t border-gray-100 pt-6 text-center sm:grid-cols-3">
+            <div className="mx-auto mt-8 grid max-w-2xl grid-cols-2 gap-4 border-t border-gray-100 pt-6 text-center">
                 <div>
                     <p className="text-lg font-bold text-gray-900 tabular-nums">{regional.goal_steps.toLocaleString()}</p>
                     <p className="text-muted-foreground text-xs">Regional Goal</p>
@@ -132,16 +132,12 @@ function Hero({ regional }: { regional: ChallengeRegionalSummary }) {
                     <p className="text-lg font-bold text-gray-900 tabular-nums">{regional.participants.toLocaleString()}</p>
                     <p className="text-muted-foreground text-xs">Participants</p>
                 </div>
-                <div>
-                    <p className="text-lg font-bold text-gray-900 tabular-nums">{regional.days_remaining}</p>
-                    <p className="text-muted-foreground text-xs">Days Remaining</p>
-                </div>
             </div>
         </section>
     );
 }
 
-function CountryCards({ countries }: { countries: ChallengeCountrySummary[] }) {
+function CountryCards({ countries }: { countries: CountryStanding[] }) {
     const byId = [...countries].sort((a, b) => a.id - b.id);
 
     return (
@@ -174,7 +170,7 @@ function CountryCards({ countries }: { countries: ChallengeCountrySummary[] }) {
     );
 }
 
-function Leaderboard({ countries }: { countries: ChallengeCountrySummary[] }) {
+function Leaderboard({ countries }: { countries: CountryStanding[] }) {
     const ranked = [...countries].sort((a, b) => a.rank - b.rank);
 
     return (
@@ -278,9 +274,9 @@ function ActivityTable({
     current_page: currentPage,
     last_page: lastPage,
     countries,
-}: HomeProps['activity'] & { countries: ChallengeCountrySummary[] }) {
+}: HomeProps['activity'] & { countries: CountryStanding[] }) {
     function updateQuery(
-        next: Partial<{ sort: ChallengeSortField; direction: ChallengeSortDirection; country: string | null; date: string | null; page: number }>,
+        next: Partial<{ sort: ActivitySortField; direction: ActivitySortDirection; country: string | null; date: string | null; page: number }>,
     ) {
         const isFilterChange = next.sort !== undefined || next.direction !== undefined || next.country !== undefined || next.date !== undefined;
 
@@ -297,7 +293,7 @@ function ActivityTable({
         );
     }
 
-    function toggleSort(field: ChallengeSortField) {
+    function toggleSort(field: ActivitySortField) {
         if (field === sort) {
             updateQuery({ sort: field, direction: direction === 'asc' ? 'desc' : 'asc' });
         } else {
@@ -305,7 +301,7 @@ function ActivityTable({
         }
     }
 
-    function SortHeader({ field, label, align = 'left' }: { field: ChallengeSortField; label: string; align?: 'left' | 'right' }) {
+    function SortHeader({ field, label, align = 'left' }: { field: ActivitySortField; label: string; align?: 'left' | 'right' }) {
         const active = sort === field;
         return (
             <button
@@ -427,7 +423,7 @@ function MyStepsPanel({
     onViewAchievements: () => void;
 }) {
     const [period, setPeriod] = useState<PeriodTab>('Day');
-    const { value, goal } = personal.periods[PERIOD_KEYS[period]];
+    const { value, goal, distance_km, calories } = personal.periods[PERIOD_KEYS[period]];
     const remaining = Math.max(0, goal - value);
     const achievementsTotal = ACHIEVEMENTS.length;
 
@@ -465,19 +461,54 @@ function MyStepsPanel({
                             </span>
                         )}
                     </div>
+
+                    <div className="mt-4 flex items-center gap-2 border-t border-gray-100 pt-4 sm:gap-3">
+                        <div className="flex flex-1 items-center justify-center gap-2.5 sm:gap-3">
+                            <span className="flex h-10 w-10 flex-none items-center justify-center rounded-full bg-[#215AA8]/10 text-[#215AA8]">
+                                <MapPin className="h-4.5 w-4.5" aria-hidden="true" />
+                            </span>
+                            <span className="flex flex-col">
+                                <span className="text-muted-foreground flex items-center gap-1.5 text-[12px] sm:text-[13px]">
+                                    Distance
+                                    <span className="bg-secondary rounded px-1 py-px text-[10px] font-bold tracking-wide uppercase sm:text-[11px]">
+                                        est
+                                    </span>
+                                </span>
+                                <strong className="pt-0.5 text-[18px] font-bold tabular-nums sm:text-[20px]">
+                                    {distance_km.toLocaleString()} <em className="text-[13px] font-normal not-italic">km</em>
+                                </strong>
+                            </span>
+                        </div>
+                        <span className="bg-border h-9 w-px flex-none" />
+                        <div className="flex flex-1 items-center justify-center gap-2.5 sm:gap-3">
+                            <span className="flex h-10 w-10 flex-none items-center justify-center rounded-full bg-[#EF5323]/10 text-[#EF5323]">
+                                <Flame className="h-4.5 w-4.5" aria-hidden="true" />
+                            </span>
+                            <span className="flex flex-col">
+                                <span className="text-muted-foreground flex items-center gap-1.5 text-[12px] sm:text-[13px]">
+                                    Calories
+                                    <span className="bg-secondary rounded px-1 py-px text-[10px] font-bold tracking-wide uppercase sm:text-[11px]">
+                                        est
+                                    </span>
+                                </span>
+                                <strong className="pt-0.5 text-[18px] font-bold tabular-nums sm:text-[20px]">
+                                    {calories.toLocaleString()} <em className="text-[13px] font-normal not-italic">kcal</em>
+                                </strong>
+                            </span>
+                        </div>
+                    </div>
                 </CardContent>
             </Card>
 
             <Card className="shadow-sm">
-                <CardContent className="flex flex-col justify-center gap-4 py-6">
-                    <div className="flex items-center gap-2 text-sm">
-                        <span className="font-bold text-gray-900">{name}</span>
+                <CardContent className="flex h-full flex-col items-center justify-center gap-4 py-6 text-center">
+                    <div className="flex flex-col items-center gap-1">
+                        <span className="text-sm font-bold text-gray-900">{name}</span>
                         {country && (
-                            <>
-                                <span className="text-gray-300">·</span>
+                            <span className="flex items-center gap-1.5 text-sm text-gray-600">
                                 <CountryFlag code={country.code} />
-                                <span className="text-gray-600">{country.name}</span>
-                            </>
+                                {country.name}
+                            </span>
                         )}
                     </div>
 
@@ -485,7 +516,7 @@ function MyStepsPanel({
 
                     <StreakCard streakDays={personal.streakDays} bare />
 
-                    <div className="grid grid-cols-2 gap-2 border-t border-gray-100 pt-4 text-center">
+                    <div className="grid w-full grid-cols-2 gap-2 border-t border-gray-100 pt-4 text-center">
                         <div>
                             <p className="text-lg font-bold text-gray-900 tabular-nums">{personal.lifetimeSteps.toLocaleString()}</p>
                             <p className="text-muted-foreground text-xs">Lifetime steps</p>
@@ -530,7 +561,7 @@ function HomeTabs({
     authGender,
 }: {
     personal: HomeProps['personal'];
-    countries: ChallengeCountrySummary[];
+    countries: CountryStanding[];
     activity: HomeProps['activity'];
     authCountry: HomeProps['authCountry'];
     authGender: HomeProps['authGender'];
@@ -816,11 +847,30 @@ export default function Home({ regional, countries, activity, authCountry, authG
                 <HomeTabs personal={personal} countries={countries} activity={activity} authCountry={authCountry} authGender={authGender} />
 
                 <section className="rounded-2xl bg-[#215AA8] px-6 py-10 text-center text-white">
-                    <p className="text-lg font-bold">3 Countries. 1 Challenge. 10 Million Steps.</p>
+                    <p className="text-lg font-bold">
+                        {countries.length} Countries. 1 Challenge. {regional.goal_steps.toLocaleString()} Steps.
+                    </p>
                     <p className="mt-2 flex items-center justify-center gap-2 text-sm text-white/85">
                         <CountryFlag code="MY" /> Malaysia + <CountryFlag code="PH" /> Philippines + <CountryFlag code="ID" /> Indonesia
                     </p>
-                    <p className="mt-1 text-sm text-white/85">Together, let&apos;s reach 10,000,000 steps.</p>
+                    <p className="mt-1 text-sm text-white/85">Together, let&apos;s reach {regional.goal_steps.toLocaleString()} steps.</p>
+
+                    {auth.user ? (
+                        <Button
+                            type="button"
+                            onClick={() => setDialogOpen(true)}
+                            className="mt-6 gap-1.5 bg-white px-5 py-2.5 font-medium text-[#215AA8] hover:bg-white/90"
+                        >
+                            <Plus className="h-4 w-4" aria-hidden="true" /> Log Today&apos;s Steps
+                        </Button>
+                    ) : (
+                        <Link
+                            href={route('login')}
+                            className="mt-6 inline-flex items-center gap-1.5 rounded-md bg-white px-5 py-2.5 font-medium text-[#215AA8] hover:bg-white/90"
+                        >
+                            <Plus className="h-4 w-4" aria-hidden="true" /> Log Today&apos;s Steps
+                        </Link>
+                    )}
                 </section>
             </main>
 

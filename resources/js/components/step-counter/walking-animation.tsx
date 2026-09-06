@@ -21,5 +21,5 @@ const LOOP_SEGMENT = [0, 39] as const;
 export default function WalkingAnimation({ gender }: { gender: string | null }) {
     const src = gender === 'female' ? WALKING_ANIMATIONS.female : WALKING_ANIMATIONS.male;
 
-    return <Lottie src={src} className="mx-auto h-28 w-28" loop autoplay segment={LOOP_SEGMENT} />;
+    return <Lottie src={src} className="mx-auto h-44 w-44" loop autoplay segment={LOOP_SEGMENT} />;
 }
