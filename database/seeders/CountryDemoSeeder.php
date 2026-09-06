@@ -30,7 +30,13 @@ class CountryDemoSeeder extends Seeder
 
     private const ACTIVITY_LEVELS = ['sedentary', 'light', 'moderate', 'very_active'];
 
-    private const GENDERS = ['female', 'male', 'non_binary', 'prefer_not_to_say'];
+    private const GENDERS = ['female', 'male'];
+
+    /**
+     * Every seeded demo user gets an email on this domain, so they can be
+     * found and removed later with `User::where('email', 'like', '%@'.self::DEMO_EMAIL_DOMAIN)`.
+     */
+    private const DEMO_EMAIL_DOMAIN = 'pngsteps.demo';
 
     public function run(): void
     {
@@ -40,10 +46,14 @@ class CountryDemoSeeder extends Seeder
 
         $countryAssignments = collect(['MY', 'PH', 'ID'])
             ->flatMap(fn (string $country) => array_fill(0, self::USERS_PER_COUNTRY, $country))
-            ->shuffle();
+            ->shuffle()
+            ->values();
 
-        $countryAssignments->each(function (string $country) use ($placeholder) {
-            $user = User::factory()->create();
+        $countryAssignments->each(function (string $country, int $index) use ($placeholder) {
+            $user = User::factory()->create([
+                'name' => "Demo User ({$country})",
+                'email' => "demo-{$country}-{$index}@".self::DEMO_EMAIL_DOMAIN,
+            ]);
 
             FormSubmission::factory()->create([
                 'user_id' => $user->id,
