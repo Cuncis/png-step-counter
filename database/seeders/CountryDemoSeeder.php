@@ -7,6 +7,7 @@ use App\Models\StepEntry;
 use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
@@ -39,6 +40,15 @@ class CountryDemoSeeder extends Seeder
     private const DEMO_EMAIL_DOMAIN = 'pngsteps.demo';
 
     public function run(): void
+    {
+        // A failure partway through (e.g. the evidence disk isn't writable)
+        // would otherwise leave partial users behind that collide with their
+        // own deterministic emails on the next attempt. Wrapping the whole
+        // batch in a transaction makes a failed run leave nothing behind.
+        DB::transaction(fn () => $this->seed());
+    }
+
+    private function seed(): void
     {
         $placeholder = base64_decode(
             'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=',
